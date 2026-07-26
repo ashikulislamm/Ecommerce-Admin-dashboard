@@ -1,0 +1,94 @@
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.Spotlight-V100/
+.Trashes/
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+logs/
+*.log
+*.out
+*.err
+debug.log*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+!.env.sample
+*.key
+*.pem
+
+# Dependency directories
+node_modules/
+bower_components/
+.pnpm-store/
+.npm/
+.yarn/
+.yarn/cache/
+.yarn/unplugged/
+.yarn/build-state.yml
+.yarn/install-state.gz
+
+# Build outputs and caches
+dist/
+build/
+out/
+coverage/
+storybook-static/
+.cache/
+.parcel-cache/
+.turbo/
+.next/
+.nuxt/
+.svelte-kit/
+vite.svg
+*.tsbuildinfo
+
+# Backend / Python artifacts
+__pycache__/
+*.py[cod]
+*.pyd
+*.pyo
+.python-version
+.venv/
+venv/
+env/
+ENV/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+
+# Databases and local data
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+
+# Docker / local orchestration
+.docker/
+docker-data/
+
+# Misc generated files
+*.tgz
+*.tar
+*.zip
+*.tmp
