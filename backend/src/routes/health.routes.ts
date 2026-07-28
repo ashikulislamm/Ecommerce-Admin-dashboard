@@ -1,32 +1,32 @@
-import { Router, Request, Response } from 'express';
+import { Router, type Request, type Response } from 'express';
 import { databaseHealthCheck } from '../config/database.js';
+import { ApiResponse } from '../shared/responses/api-response.js';
+import { asyncHandler } from '../shared/utils/async-handler.js';
 
 const router = Router();
 
-router.get('/', async (_req: Request, res: Response) => {
-  const health = await databaseHealthCheck();
+router.get(
+  '/',
+  asyncHandler(async (_req: Request, res: Response) => {
+    const health = await databaseHealthCheck();
 
-  if (health.connected) {
-    res.status(200).json({
-      success: true,
-      message: 'Database connection is healthy',
-      data: {
+    if (health.connected) {
+      ApiResponse.success(res, 200, 'Service is healthy', {
         status: 'healthy',
+        database: 'connected',
         timestamp: health.timestamp,
         latencyMs: health.latencyMs,
-      },
-    });
-  } else {
-    res.status(503).json({
-      success: false,
-      message: 'Database connection failed',
-      error: health.error,
-      data: {
-        status: 'unhealthy',
-        timestamp: health.timestamp,
-      },
-    });
-  }
-});
+      });
+    } else {
+      ApiResponse.error(
+        res,
+        503,
+        'Database connection failed',
+        'DATABASE_UNAVAILABLE',
+        [{ message: health.error ?? 'Unknown database error' }],
+      );
+    }
+  }),
+);
 
 export default router;
