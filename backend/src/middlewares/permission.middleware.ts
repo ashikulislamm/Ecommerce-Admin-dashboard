@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction, RequestHandler } from 'express';
 import { AppError } from '../shared/errors/app-error.js';
-import prisma from '../lib/prisma.js';
+import AuthorizationService from '../modules/auth/authorization.service.js';
 
 /**
  * Authorization middleware factory.
@@ -11,14 +11,14 @@ import prisma from '../lib/prisma.js';
  *
  * Flow:
  * 1. Confirm req.user is populated (authenticate ran)
- * 2. Load role permissions from the database (server-side — never trust client claims)
- * 3. Check if the required permission is present
- * 4. Allow or reject (403)
+ * 2. Delegate to AuthorizationService to dynamically check DB permissions
+ * 3. Allow (next()) or reject with 403 Forbidden
  *
  * Security:
- * - Permissions are loaded from the database, not from JWT claims
- * - Changes to permissions take effect immediately without requiring re-login
- * - Never uses hardcoded role name checks as the primary authorization mechanism
+ * - 401 is used if req.user is missing (unauthenticated)
+ * - 403 is used if req.user lacks permission (unauthorized)
+ * - Permissions are checked dynamically against server-side data
+ * - Permission changes take effect immediately without requiring re-login
  *
  * Usage:
  *   router.post('/products', authenticate, authorize('products.create'), handler)
@@ -31,20 +31,15 @@ export const authorize = (requiredPermission: string): RequestHandler => {
         throw AppError.unauthorized('Authentication is required before authorization');
       }
 
-      // Load current permissions for the user's role from the database
-      const rolePermissions = await prisma.rolePermission.findMany({
-        where: { roleId: req.user.roleId },
-        include: {
-          permission: {
-            select: { name: true },
-          },
-        },
-      });
+      const hasPerm = await AuthorizationService.hasPermission(
+        req.user.roleId,
+        requiredPermission,
+      );
 
-      const permissionNames = rolePermissions.map((rp) => rp.permission.name);
-
-      if (!permissionNames.includes(requiredPermission)) {
-        throw AppError.forbidden(
+      if (!hasPerm) {
+        throw new AppError(
+          403,
+          'AUTH_FORBIDDEN',
           `You do not have the required permission: "${requiredPermission}"`,
         );
       }

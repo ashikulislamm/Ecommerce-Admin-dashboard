@@ -317,7 +317,7 @@ SlugGenerator
 
 ***
 
-# Phase 4 — Authentication
+# Phase 4 — Authentication [COMPLETED]
 
 This should be the first real business module.
 
@@ -421,7 +421,7 @@ Simply deleting the frontend cookie is not enough.
 
 ***
 
-# Phase 5 — Authorization Infrastructure
+# Phase 5 — Authorization Infrastructure [COMPLETED]
 
 Now build the global RBAC engine.
 
