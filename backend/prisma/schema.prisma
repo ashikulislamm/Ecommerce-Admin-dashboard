@@ -78,6 +78,7 @@ model Role {
   id              String           @id @default(uuid()) @db.Uuid
   name            String           @unique
   description     String?
+  isSystemRole    Boolean          @default(false)
   users           User[]
   rolePermissions RolePermission[]
   createdAt       DateTime         @default(now())
@@ -89,6 +90,7 @@ model Role {
 model PermissionGroup {
   id          String       @id @default(uuid()) @db.Uuid
   name        String       @unique
+  module      String       @unique
   description String?
   permissions Permission[]
   createdAt   DateTime     @default(now())
@@ -99,8 +101,12 @@ model PermissionGroup {
 
 model Permission {
   id                String           @id @default(uuid()) @db.Uuid
-  name              String           @unique
+  key               String           @unique
+  name              String
+  module            String
+  action            String
   description       String?
+  isCustom          Boolean          @default(false)
   permissionGroupId String           @db.Uuid
   permissionGroup   PermissionGroup  @relation(fields: [permissionGroupId], references: [id], onDelete: Cascade)
   rolePermissions   RolePermission[]
@@ -108,6 +114,9 @@ model Permission {
   updatedAt         DateTime         @updatedAt
 
   @@index([permissionGroupId])
+  @@index([module])
+  @@index([key])
+  @@unique([module, action])
   @@map("permissions")
 }
 

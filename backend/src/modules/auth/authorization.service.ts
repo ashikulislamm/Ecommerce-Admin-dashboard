@@ -31,7 +31,10 @@ export class AuthorizationService {
       where: {
         roleId,
         permission: {
-          name: requiredPermission,
+          OR: [
+            { key: requiredPermission },
+            { name: requiredPermission },
+          ],
         },
       },
     });
@@ -40,7 +43,7 @@ export class AuthorizationService {
   }
 
   /**
-   * Get all permission names assigned to a role.
+   * Get all permission keys assigned to a role.
    */
   static async getRolePermissions(roleId: string): Promise<string[]> {
     const role = await prisma.role.findUnique({
@@ -52,21 +55,21 @@ export class AuthorizationService {
 
     if (role.name === 'SUPER_ADMIN') {
       const allPermissions = await prisma.permission.findMany({
-        select: { name: true },
+        select: { key: true },
       });
-      return allPermissions.map((p) => p.name);
+      return allPermissions.map((p) => p.key);
     }
 
     const rolePermissions = await prisma.rolePermission.findMany({
       where: { roleId },
       include: {
         permission: {
-          select: { name: true },
+          select: { key: true },
         },
       },
     });
 
-    return rolePermissions.map((rp) => rp.permission.name);
+    return rolePermissions.map((rp) => rp.permission.key);
   }
 }
 

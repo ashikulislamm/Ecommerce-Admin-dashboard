@@ -494,7 +494,7 @@ Avoid embedding the entire permission list permanently inside JWTs.
 
 ***
 
-# Phase 6 — Permission Management
+# Phase 6 — Permission Management [COMPLETED]
 
 ## Features
 
@@ -559,7 +559,7 @@ with:
 
 ***
 
-# Phase 7 — Role Management
+# Phase 7 — Role Management [COMPLETED]
 
 ## Features
 
@@ -597,7 +597,7 @@ Also prevent the system from reaching a state where nobody can manage roles.
 
 ***
 
-# Phase 8 — User Management
+# Phase 8 — User Management [COMPLETED]
 
 ## Features
 

@@ -6,69 +6,77 @@ export const seedPermissions = async (
 ) => {
   const permissionsList = [
     // Users
-    { name: 'users.read', description: 'View users', group: 'Users' },
-    { name: 'users.create', description: 'Create users', group: 'Users' },
-    { name: 'users.update', description: 'Update users', group: 'Users' },
-    { name: 'users.delete', description: 'Delete users', group: 'Users' },
+    { key: 'users:read', module: 'users', action: 'read', name: 'Read Users', description: 'View users', groupModule: 'users' },
+    { key: 'users:create', module: 'users', action: 'create', name: 'Create Users', description: 'Create users', groupModule: 'users' },
+    { key: 'users:update', module: 'users', action: 'update', name: 'Update Users', description: 'Update users', groupModule: 'users' },
+    { key: 'users:delete', module: 'users', action: 'delete', name: 'Delete Users', description: 'Delete users', groupModule: 'users' },
     // Roles
-    { name: 'roles.read', description: 'View roles', group: 'Roles' },
-    { name: 'roles.create', description: 'Create roles', group: 'Roles' },
-    { name: 'roles.update', description: 'Update roles', group: 'Roles' },
-    { name: 'roles.delete', description: 'Delete roles', group: 'Roles' },
+    { key: 'roles:read', module: 'roles', action: 'read', name: 'Read Roles', description: 'View roles', groupModule: 'roles' },
+    { key: 'roles:create', module: 'roles', action: 'create', name: 'Create Roles', description: 'Create roles', groupModule: 'roles' },
+    { key: 'roles:update', module: 'roles', action: 'update', name: 'Update Roles', description: 'Update roles', groupModule: 'roles' },
+    { key: 'roles:delete', module: 'roles', action: 'delete', name: 'Delete Roles', description: 'Delete roles', groupModule: 'roles' },
     // Permissions
-    { name: 'permissions.read', description: 'View permissions', group: 'Permissions' },
-    { name: 'permissions.create', description: 'Create permissions', group: 'Permissions' },
-    { name: 'permissions.update', description: 'Update permissions', group: 'Permissions' },
-    { name: 'permissions.delete', description: 'Delete permissions', group: 'Permissions' },
+    { key: 'permissions:read', module: 'permissions', action: 'read', name: 'Read Permissions', description: 'View permissions', groupModule: 'permissions' },
+    { key: 'permissions:create', module: 'permissions', action: 'create', name: 'Create Permissions', description: 'Create permissions', groupModule: 'permissions' },
+    { key: 'permissions:update', module: 'permissions', action: 'update', name: 'Update Permissions', description: 'Update permissions', groupModule: 'permissions' },
+    { key: 'permissions:delete', module: 'permissions', action: 'delete', name: 'Delete Permissions', description: 'Delete permissions', groupModule: 'permissions' },
     // Products
-    { name: 'products.read', description: 'View products', group: 'Products' },
-    { name: 'products.create', description: 'Create products', group: 'Products' },
-    { name: 'products.update', description: 'Update products', group: 'Products' },
-    { name: 'products.delete', description: 'Delete products', group: 'Products' },
+    { key: 'products:read', module: 'products', action: 'read', name: 'Read Products', description: 'View products', groupModule: 'products' },
+    { key: 'products:create', module: 'products', action: 'create', name: 'Create Products', description: 'Create products', groupModule: 'products' },
+    { key: 'products:update', module: 'products', action: 'update', name: 'Update Products', description: 'Update products', groupModule: 'products' },
+    { key: 'products:delete', module: 'products', action: 'delete', name: 'Delete Products', description: 'Delete products', groupModule: 'products' },
     // Categories
-    { name: 'categories.read', description: 'View categories', group: 'Categories' },
-    { name: 'categories.create', description: 'Create categories', group: 'Categories' },
-    { name: 'categories.update', description: 'Update categories', group: 'Categories' },
-    { name: 'categories.delete', description: 'Delete categories', group: 'Categories' },
+    { key: 'categories:read', module: 'categories', action: 'read', name: 'Read Categories', description: 'View categories', groupModule: 'categories' },
+    { key: 'categories:create', module: 'categories', action: 'create', name: 'Create Categories', description: 'Create categories', groupModule: 'categories' },
+    { key: 'categories:update', module: 'categories', action: 'update', name: 'Update Categories', description: 'Update categories', groupModule: 'categories' },
+    { key: 'categories:delete', module: 'categories', action: 'delete', name: 'Delete Categories', description: 'Delete categories', groupModule: 'categories' },
     // Brands
-    { name: 'brands.read', description: 'View brands', group: 'Brands' },
-    { name: 'brands.create', description: 'Create brands', group: 'Brands' },
-    { name: 'brands.update', description: 'Update brands', group: 'Brands' },
-    { name: 'brands.delete', description: 'Delete brands', group: 'Brands' },
+    { key: 'brands:read', module: 'brands', action: 'read', name: 'Read Brands', description: 'View brands', groupModule: 'brands' },
+    { key: 'brands:create', module: 'brands', action: 'create', name: 'Create Brands', description: 'Create brands', groupModule: 'brands' },
+    { key: 'brands:update', module: 'brands', action: 'update', name: 'Update Brands', description: 'Update brands', groupModule: 'brands' },
+    { key: 'brands:delete', module: 'brands', action: 'delete', name: 'Delete Brands', description: 'Delete brands', groupModule: 'brands' },
     // Attributes
-    { name: 'attributes.read', description: 'View attributes', group: 'Attributes' },
-    { name: 'attributes.create', description: 'Create attributes', group: 'Attributes' },
-    { name: 'attributes.update', description: 'Update attributes', group: 'Attributes' },
-    { name: 'attributes.delete', description: 'Delete attributes', group: 'Attributes' },
+    { key: 'attributes:read', module: 'attributes', action: 'read', name: 'Read Attributes', description: 'View attributes', groupModule: 'attributes' },
+    { key: 'attributes:create', module: 'attributes', action: 'create', name: 'Create Attributes', description: 'Create attributes', groupModule: 'attributes' },
+    { key: 'attributes:update', module: 'attributes', action: 'update', name: 'Update Attributes', description: 'Update attributes', groupModule: 'attributes' },
+    { key: 'attributes:delete', module: 'attributes', action: 'delete', name: 'Delete Attributes', description: 'Delete attributes', groupModule: 'attributes' },
     // Media
-    { name: 'media.read', description: 'View media', group: 'Media' },
-    { name: 'media.create', description: 'Create media', group: 'Media' },
-    { name: 'media.update', description: 'Update media', group: 'Media' },
-    { name: 'media.delete', description: 'Delete media', group: 'Media' },
+    { key: 'media:read', module: 'media', action: 'read', name: 'Read Media', description: 'View media', groupModule: 'media' },
+    { key: 'media:create', module: 'media', action: 'create', name: 'Create Media', description: 'Create media', groupModule: 'media' },
+    { key: 'media:update', module: 'media', action: 'update', name: 'Update Media', description: 'Update media', groupModule: 'media' },
+    { key: 'media:delete', module: 'media', action: 'delete', name: 'Delete Media', description: 'Delete media', groupModule: 'media' },
   ];
 
   const permissionMap = new Map<string, string>();
 
   for (const perm of permissionsList) {
-    const groupId = groupMap.get(perm.group);
+    const groupId = groupMap.get(perm.groupModule);
     if (!groupId) {
-      throw new Error(`Permission Group ${perm.group} not found`);
+      throw new Error(`Permission Group module ${perm.groupModule} not found`);
     }
 
     const record = await prisma.permission.upsert({
-      where: { name: perm.name },
+      where: { key: perm.key },
       update: {
+        name: perm.name,
+        module: perm.module,
+        action: perm.action,
         description: perm.description,
+        isCustom: false,
         permissionGroupId: groupId,
       },
       create: {
+        key: perm.key,
         name: perm.name,
+        module: perm.module,
+        action: perm.action,
         description: perm.description,
+        isCustom: false,
         permissionGroupId: groupId,
       },
     });
 
-    permissionMap.set(perm.name, record.id);
+    permissionMap.set(perm.key, record.id);
   }
 
   console.log(`  ✓ Seeded ${permissionsList.length} Permissions`);
