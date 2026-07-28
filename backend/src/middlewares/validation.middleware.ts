@@ -8,19 +8,23 @@ type ValidationTarget = 'body' | 'query' | 'params';
  * Zod validation middleware factory.
  *
  * Validates request body, query, or params against a Zod schema.
- * On failure, returns a standard VALIDATION_ERROR response with field-level details.
- * On success, replaces the target with the parsed (coerced/transformed) value.
- *
- * Usage:
- *   router.post('/users', validate(createUserSchema), asyncHandler(userController.create))
- *   router.get('/users', validate(paginationQuerySchema, 'query'), asyncHandler(userController.list))
+ * Supports full request object schemas ({ body: ..., query: ..., params: ... })
+ * or target-specific schemas.
  */
 export const validate = (
   schema: ZodSchema,
-  target: ValidationTarget = 'body',
+  target?: ValidationTarget,
 ): RequestHandler => {
   return (req: Request, res: Response, next: NextFunction): void => {
-    const result = schema.safeParse(req[target]);
+    const dataToValidate: unknown = target
+      ? req[target]
+      : {
+          body: req.body,
+          query: req.query,
+          params: req.params,
+        };
+
+    const result = schema.safeParse(dataToValidate);
 
     if (!result.success) {
       const details = result.error.issues.map((issue) => ({
@@ -32,16 +36,54 @@ export const validate = (
       return;
     }
 
-    // Replace the target with the parsed/coerced data (e.g. string "1" → number 1)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (req as any)[target] = result.data;
+    if (result.data && typeof result.data === 'object') {
+      const parsedData = result.data as Record<string, unknown>;
+
+      if (parsedData.body !== undefined) {
+        req.body = parsedData.body;
+      }
+      if (parsedData.query !== undefined) {
+        Object.defineProperty(req, 'query', {
+          value: parsedData.query,
+          writable: true,
+          enumerable: true,
+          configurable: true,
+        });
+      }
+      if (parsedData.params !== undefined) {
+        Object.defineProperty(req, 'params', {
+          value: parsedData.params,
+          writable: true,
+          enumerable: true,
+          configurable: true,
+        });
+      }
+      if (target && parsedData.body === undefined && parsedData.query === undefined && parsedData.params === undefined) {
+        if (target === 'body') {
+          req.body = parsedData;
+        } else if (target === 'query') {
+          Object.defineProperty(req, 'query', {
+            value: parsedData,
+            writable: true,
+            enumerable: true,
+            configurable: true,
+          });
+        } else if (target === 'params') {
+          Object.defineProperty(req, 'params', {
+            value: parsedData,
+            writable: true,
+            enumerable: true,
+            configurable: true,
+          });
+        }
+      }
+    }
+
     next();
   };
 };
 
 export default validate;
-
-// --- Convenience shorthand exports ---
 
 export const validateBody = (schema: ZodSchema): RequestHandler =>
   validate(schema, 'body');

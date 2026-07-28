@@ -2,7 +2,7 @@
 
 import React from 'react';
 import type { PermissionGroup } from '../types/permission.types';
-import { Layers, CheckCircle2, Shield } from 'lucide-react';
+import { Layers, ShieldCheck } from 'lucide-react';
 
 interface PermissionGroupMatrixProps {
   groups: PermissionGroup[];
@@ -12,9 +12,9 @@ interface PermissionGroupMatrixProps {
 export function PermissionGroupMatrix({ groups, isLoading }: PermissionGroupMatrixProps) {
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
         {[...Array(6)].map((_, i) => (
-          <div key={i} className="h-48 rounded-xl bg-slate-900/60 border border-slate-800 animate-pulse" />
+          <div key={i} className="h-32 w-full animate-pulse rounded-2xl bg-white border border-slate-200" />
         ))}
       </div>
     );
@@ -22,61 +22,46 @@ export function PermissionGroupMatrix({ groups, isLoading }: PermissionGroupMatr
 
   if (!groups || groups.length === 0) {
     return (
-      <div className="p-8 text-center bg-slate-900/60 rounded-xl border border-slate-800 text-slate-400">
-        No permission groups found.
+      <div className="flex flex-col items-center justify-center p-12 text-center rounded-2xl bg-white border border-slate-200">
+        <Layers className="w-12 h-12 text-slate-400 mb-3" />
+        <h3 className="text-base font-bold text-slate-900">No Permission Groups Found</h3>
+        <p className="text-xs text-slate-500 max-w-md mt-1">
+          Permission groups will automatically appear here once permissions are registered.
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {groups.map((group) => (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      {groups.map((g) => (
         <div
-          key={group.id}
-          className="rounded-xl border border-slate-800 bg-slate-900/80 p-5 shadow-lg backdrop-blur-sm flex flex-col justify-between hover:border-slate-700 transition-all"
+          key={g.id || g.module}
+          className="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
         >
           <div>
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
-              <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-lg bg-emerald-950/50 text-emerald-400 border border-emerald-500/20">
-                  <Layers className="w-5 h-5" />
-                </div>
-                <div>
-                  <h4 className="font-semibold text-slate-100 text-base">{group.name}</h4>
-                  <span className="text-xs font-mono text-emerald-400/80 capitalize">
-                    {group.module}
-                  </span>
-                </div>
-              </div>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-medium">
-                {group.permissions?.length || 0} Actions
+            <div className="flex items-center justify-between mb-3">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 capitalize">
+                <ShieldCheck className="w-4 h-4 text-emerald-700" /> {g.module}
+              </span>
+              <span className="text-[11px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+                {g.permissions?.length || 0} Actions
               </span>
             </div>
+            <p className="text-xs text-slate-500 line-clamp-2 mb-4">
+              {g.description || `Registered action controls for the ${g.module} module.`}
+            </p>
+          </div>
 
-            {group.description && (
-              <p className="text-xs text-slate-400 mb-4">{group.description}</p>
-            )}
-
-            <div className="space-y-2">
-              {group.permissions && group.permissions.length > 0 ? (
-                group.permissions.map((perm) => (
-                  <div
-                    key={perm.id}
-                    className="flex items-center justify-between p-2 rounded-lg bg-slate-800/40 text-xs border border-slate-800/80"
-                  >
-                    <div className="flex items-center gap-2">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                      <span className="font-medium text-slate-200">{perm.action}</span>
-                    </div>
-                    <span className="font-mono text-[10px] text-cyan-400/80 bg-slate-900 px-1.5 py-0.5 rounded">
-                      {perm.key}
-                    </span>
-                  </div>
-                ))
-              ) : (
-                <div className="text-xs text-slate-500 italic">No permissions in group</div>
-              )}
-            </div>
+          <div className="flex flex-wrap gap-1.5 pt-3 border-t border-slate-100">
+            {g.permissions?.map((p) => (
+              <span
+                key={p.id}
+                className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-mono font-semibold bg-slate-100 text-slate-700 border border-slate-200/80"
+              >
+                {p.action}
+              </span>
+            ))}
           </div>
         </div>
       ))}

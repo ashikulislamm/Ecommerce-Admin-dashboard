@@ -16,7 +16,6 @@ import type { User, UserStatus } from '@/features/users/types/user.types';
 import {
   Users,
   Search,
-  Filter,
   Plus,
   AlertCircle,
   CheckCircle2,
@@ -111,26 +110,26 @@ export default function UsersPage() {
   };
 
   return (
-    <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-6 text-slate-100">
+    <div className="space-y-6 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-800 pb-5">
-        <div className="flex items-center gap-3">
-          <div className="p-3 rounded-xl bg-cyan-950/80 text-cyan-400 border border-cyan-500/30 shadow-lg shadow-cyan-950/50">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-2xl bg-white border border-slate-200/90 shadow-sm">
+        <div className="flex items-center gap-3.5">
+          <div className="p-3 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200">
             <Users className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-100">
+            <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">
               User Management
             </h1>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Manage system users, role assignments, activation status, and access sessions
+            <p className="text-xs text-slate-500 mt-0.5 font-medium">
+              Manage system accounts, role assignments, activation status, and active session revocation
             </p>
           </div>
         </div>
 
         <button
           onClick={() => setIsCreateModalOpen(true)}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-xs shadow-lg shadow-cyan-950/50 transition-all border border-cyan-500/20"
+          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-sm transition-all"
         >
           <Plus className="w-4 h-4" /> Create User
         </button>
@@ -139,23 +138,23 @@ export default function UsersPage() {
       {/* Alert Notifications */}
       {feedback && (
         <div
-          className={`p-4 rounded-xl text-xs flex items-center justify-between border ${
+          className={`p-4 rounded-xl text-xs flex items-center justify-between border font-medium ${
             feedback.type === 'success'
-              ? 'bg-emerald-950/80 border-emerald-500/40 text-emerald-200'
-              : 'bg-rose-950/80 border-rose-500/40 text-rose-200'
+              ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
+              : 'bg-rose-50 border-rose-200 text-rose-900'
           }`}
         >
           <div className="flex items-center gap-2.5">
             {feedback.type === 'success' ? (
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
             ) : (
-              <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+              <AlertCircle className="w-4 h-4 text-rose-700 shrink-0" />
             )}
             <span>{feedback.message}</span>
           </div>
           <button
             onClick={() => setFeedback(null)}
-            className="text-slate-400 hover:text-slate-200 text-xs ml-4"
+            className="text-slate-400 hover:text-slate-700 text-xs font-bold ml-4"
           >
             Dismiss
           </button>
@@ -163,10 +162,10 @@ export default function UsersPage() {
       )}
 
       {/* Control Bar & Filters */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-slate-900/60 p-4 rounded-2xl border border-slate-800 backdrop-blur-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200/90 shadow-xs">
         <div className="flex flex-wrap items-center gap-3 flex-1">
           <div className="relative flex-1 min-w-[200px]">
-            <Search className="absolute left-3.5 top-2.5 w-4 h-4 text-slate-500" />
+            <Search className="absolute left-3.5 top-2.5 w-4 h-4 text-slate-400" />
             <input
               type="text"
               placeholder="Search users by name, email..."
@@ -175,7 +174,7 @@ export default function UsersPage() {
                 setSearch(e.target.value);
                 setPage(1);
               }}
-              className="w-full pl-10 pr-4 py-2 text-xs rounded-xl bg-slate-950 border border-slate-800 text-slate-100 placeholder-slate-500 focus:border-cyan-500 focus:outline-none"
+              className="w-full pl-10 pr-4 py-2 text-xs rounded-xl bg-slate-50/50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:bg-white focus:border-emerald-600 focus:outline-none font-medium"
             />
           </div>
 
@@ -186,7 +185,7 @@ export default function UsersPage() {
                 setSelectedRoleFilter(e.target.value);
                 setPage(1);
               }}
-              className="w-full px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-800 text-slate-300 focus:border-cyan-500 focus:outline-none"
+              className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50/50 border border-slate-200 text-slate-800 focus:bg-white focus:border-emerald-600 focus:outline-none font-medium"
             >
               <option value="">All Roles</option>
               {roles.map((r) => (
@@ -204,7 +203,7 @@ export default function UsersPage() {
                 setSelectedStatusFilter(e.target.value as UserStatus | '');
                 setPage(1);
               }}
-              className="w-full px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-800 text-slate-300 focus:border-cyan-500 focus:outline-none"
+              className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50/50 border border-slate-200 text-slate-800 focus:bg-white focus:border-emerald-600 focus:outline-none font-medium"
             >
               <option value="">All Statuses</option>
               <option value="ACTIVE">Active</option>
@@ -226,23 +225,23 @@ export default function UsersPage() {
 
       {/* Pagination Controls */}
       {meta && meta.totalPages > 1 && (
-        <div className="flex items-center justify-between border-t border-slate-800 pt-4 text-xs text-slate-400">
+        <div className="flex items-center justify-between border-t border-slate-200 pt-4 text-xs text-slate-500 font-medium">
           <div>
-            Showing page <span className="font-semibold text-slate-200">{meta.page}</span> of{' '}
-            <span className="font-semibold text-slate-200">{meta.totalPages}</span> ({meta.total} total users)
+            Showing page <span className="font-bold text-slate-900">{meta.page}</span> of{' '}
+            <span className="font-bold text-slate-900">{meta.totalPages}</span> ({meta.total} total users)
           </div>
           <div className="flex items-center gap-2">
             <button
               disabled={meta.page <= 1}
               onClick={() => setPage((p) => Math.max(p - 1, 1))}
-              className="p-2 rounded-lg bg-slate-900 border border-slate-800 hover:bg-slate-800 disabled:opacity-40 transition-colors"
+              className="p-2 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 disabled:opacity-40 transition-colors shadow-xs"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
             <button
               disabled={meta.page >= meta.totalPages}
               onClick={() => setPage((p) => p + 1)}
-              className="p-2 rounded-lg bg-slate-900 border border-slate-800 hover:bg-slate-800 disabled:opacity-40 transition-colors"
+              className="p-2 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 disabled:opacity-40 transition-colors shadow-xs"
             >
               <ChevronRight className="w-4 h-4" />
             </button>

@@ -21,9 +21,9 @@ export function UserTable({
 }: UserTableProps) {
   if (isLoading) {
     return (
-      <div className="w-full space-y-3 p-4">
+      <div className="w-full space-y-3 p-4 bg-white rounded-2xl border border-slate-200">
         {[...Array(5)].map((_, i) => (
-          <div key={i} className="h-14 w-full animate-pulse rounded-lg bg-slate-800/50" />
+          <div key={i} className="h-14 w-full animate-pulse rounded-xl bg-slate-100" />
         ))}
       </div>
     );
@@ -31,10 +31,10 @@ export function UserTable({
 
   if (!users || users.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-12 text-center rounded-xl bg-slate-900/60 border border-slate-800">
-        <AlertCircle className="w-12 h-12 text-amber-500/80 mb-3" />
-        <h3 className="text-lg font-semibold text-slate-200">No Users Found</h3>
-        <p className="text-sm text-slate-400 max-w-md mt-1">
+      <div className="flex flex-col items-center justify-center p-12 text-center rounded-2xl bg-white border border-slate-200 shadow-xs">
+        <AlertCircle className="w-12 h-12 text-amber-500 mb-3" />
+        <h3 className="text-base font-bold text-slate-900">No Users Found</h3>
+        <p className="text-xs text-slate-500 max-w-md mt-1 font-medium">
           No users match your current search query or filter options.
         </p>
       </div>
@@ -42,75 +42,75 @@ export function UserTable({
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/80 backdrop-blur-md shadow-xl">
-      <table className="w-full text-left text-sm text-slate-300">
-        <thead className="bg-slate-800/80 text-xs uppercase tracking-wider text-slate-400 border-b border-slate-800">
+    <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm">
+      <table className="w-full text-left text-sm text-slate-700">
+        <thead className="bg-slate-50 text-[11px] uppercase tracking-wider text-slate-500 border-b border-slate-200/80 font-bold">
           <tr>
-            <th scope="col" className="px-6 py-4 font-semibold">
-              <div className="flex items-center gap-2">
-                <UserIcon className="w-4 h-4 text-cyan-400" /> Name
+            <th scope="col" className="px-6 py-3.5">
+              <div className="flex items-center gap-1.5">
+                <UserIcon className="w-3.5 h-3.5 text-emerald-700" /> Name
               </div>
             </th>
-            <th scope="col" className="px-6 py-4 font-semibold">
-              <div className="flex items-center gap-2">
-                <Mail className="w-4 h-4 text-emerald-400" /> Email
+            <th scope="col" className="px-6 py-3.5">
+              <div className="flex items-center gap-1.5">
+                <Mail className="w-3.5 h-3.5 text-slate-400" /> Email
               </div>
             </th>
-            <th scope="col" className="px-6 py-4 font-semibold">
-              <div className="flex items-center gap-2">
-                <Shield className="w-4 h-4 text-purple-400" /> Role
+            <th scope="col" className="px-6 py-3.5">
+              <div className="flex items-center gap-1.5">
+                <Shield className="w-3.5 h-3.5 text-lime-700" /> Role
               </div>
             </th>
-            <th scope="col" className="px-6 py-4 font-semibold">
+            <th scope="col" className="px-6 py-3.5">
               Status
             </th>
-            <th scope="col" className="px-6 py-4 font-semibold">
+            <th scope="col" className="px-6 py-3.5">
               Created At
             </th>
-            <th scope="col" className="px-6 py-4 font-semibold text-right">
+            <th scope="col" className="px-6 py-3.5 text-right">
               Actions
             </th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-800/60">
+        <tbody className="divide-y divide-slate-100">
           {users.map((u) => {
             const fullName = [u.firstName, u.lastName].filter(Boolean).join(' ') || 'N/A';
-            const isSelfOrSuper = u.role?.name === 'SUPER_ADMIN';
+            const isSuperAdmin = u.role?.name === 'SUPER_ADMIN';
 
             return (
-              <tr key={u.id} className="hover:bg-slate-800/40 transition-colors group">
-                <td className="px-6 py-4 font-semibold text-slate-100">{fullName}</td>
-                <td className="px-6 py-4 text-slate-300 font-mono text-xs">{u.email}</td>
-                <td className="px-6 py-4">
-                  <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-purple-950/60 text-purple-300 border border-purple-500/30">
+              <tr key={u.id} className="hover:bg-slate-50/80 transition-colors group">
+                <td className="px-6 py-3.5 font-bold text-slate-900">{fullName}</td>
+                <td className="px-6 py-3.5 font-mono text-xs text-slate-600">{u.email}</td>
+                <td className="px-6 py-3.5">
+                  <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-lime-100 text-lime-900 border border-lime-200">
                     {u.role?.name || 'No Role'}
                   </span>
                 </td>
-                <td className="px-6 py-4">
+                <td className="px-6 py-3.5">
                   {u.status === 'ACTIVE' && (
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-950/60 text-emerald-300 border border-emerald-500/30">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> Active
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-900 border border-emerald-200">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Active
                     </span>
                   )}
                   {u.status === 'INACTIVE' && (
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-800 text-slate-400 border border-slate-700">
-                      <span className="w-1.5 h-1.5 rounded-full bg-slate-500" /> Inactive
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-600 border border-slate-200">
+                      <span className="w-1.5 h-1.5 rounded-full bg-slate-400" /> Inactive
                     </span>
                   )}
                   {u.status === 'SUSPENDED' && (
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-950/60 text-rose-300 border border-rose-500/30">
-                      <span className="w-1.5 h-1.5 rounded-full bg-rose-400" /> Suspended
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-900 border border-rose-200">
+                      <span className="w-1.5 h-1.5 rounded-full bg-rose-500" /> Suspended
                     </span>
                   )}
                 </td>
-                <td className="px-6 py-4 text-xs text-slate-400">
+                <td className="px-6 py-3.5 text-xs text-slate-500 font-medium">
                   {new Date(u.createdAt).toLocaleDateString()}
                 </td>
-                <td className="px-6 py-4 text-right">
-                  <div className="flex items-center justify-end gap-2">
+                <td className="px-6 py-3.5 text-right">
+                  <div className="flex items-center justify-end gap-1">
                     <button
                       onClick={() => onChangeRole(u)}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-purple-400 hover:bg-purple-950/40 transition-colors"
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-700 hover:bg-emerald-50 transition-colors"
                       title="Change User Role"
                     >
                       <UserCog className="w-4 h-4" />
@@ -119,7 +119,7 @@ export function UserTable({
                     {u.status === 'ACTIVE' ? (
                       <button
                         onClick={() => onChangeStatus(u, 'INACTIVE')}
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-amber-400 hover:bg-amber-950/40 transition-colors"
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-colors"
                         title="Deactivate User & Revoke Sessions"
                       >
                         <UserX className="w-4 h-4" />
@@ -127,17 +127,17 @@ export function UserTable({
                     ) : (
                       <button
                         onClick={() => onChangeStatus(u, 'ACTIVE')}
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-400 hover:bg-emerald-950/40 transition-colors"
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-700 hover:bg-emerald-50 transition-colors"
                         title="Activate User"
                       >
                         <UserCheck className="w-4 h-4" />
                       </button>
                     )}
 
-                    {!isSelfOrSuper && (
+                    {!isSuperAdmin && (
                       <button
                         onClick={() => onDelete(u)}
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-950/40 transition-colors"
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
                         title="Delete User"
                       >
                         <Trash2 className="w-4 h-4" />

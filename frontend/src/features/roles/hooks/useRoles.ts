@@ -45,6 +45,18 @@ export function useUpdateRole() {
   });
 }
 
+export function useUpdateRolePermissions() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ roleId, permissionIds }: { roleId: string; permissionIds: string[] }) =>
+      RoleService.updateRole(roleId, { permissionIds }),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ROLE_QUERY_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: ROLE_QUERY_KEYS.detail(variables.roleId) });
+    },
+  });
+}
+
 export function useDeleteRole() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -65,3 +77,5 @@ export function useGrantAllPermissions() {
     },
   });
 }
+
+export const useGrantAllRolePermissions = useGrantAllPermissions;

@@ -48,8 +48,21 @@ export const userQuerySchema = z.object({
   query: z.object({
     page: z.coerce.number().int().positive().optional().default(1),
     limit: z.coerce.number().int().positive().max(100).optional().default(20),
-    search: z.string().optional(),
-    roleId: z.string().uuid().optional(),
-    status: z.nativeEnum(UserStatus).optional(),
+    search: z.string().optional().transform((val) => (val?.trim() === '' ? undefined : val)),
+    roleId: z
+      .string()
+      .optional()
+      .transform((val) => (val?.trim() === '' ? undefined : val))
+      .refine((val) => val === undefined || z.string().uuid().safeParse(val).success, {
+        message: 'Invalid role ID format',
+      }),
+    status: z
+      .string()
+      .optional()
+      .transform((val) => (val?.trim() === '' ? undefined : val))
+      .refine((val) => val === undefined || Object.values(UserStatus).includes(val as any), {
+        message: 'Invalid status',
+      })
+      .transform((val) => (val ? (val as UserStatus) : undefined)),
   }),
 });

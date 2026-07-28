@@ -3,180 +3,187 @@
 import React, { useState, useEffect } from 'react';
 import type { Role } from '../types/role.types';
 import type { PermissionGroup, Permission } from '@/features/permissions/types/permission.types';
-import {
-  ShieldCheck,
-  Save,
-  Wand2,
-  RotateCcw,
-  CheckSquare,
-  Square,
-  AlertCircle,
-  CheckCircle2,
-} from 'lucide-react';
+import { ShieldCheck, Save, Sparkles, CheckSquare, Square, RefreshCw } from 'lucide-react';
 
 interface RolePermissionMatrixProps {
-  role: Role;
-  permissionGroups: PermissionGroup[];
-  allPermissions: Permission[];
-  onSaveBatch: (roleId: string, permissionIds: string[]) => Promise<void>;
-  onGrantAll: (roleId: string) => Promise<void>;
-  isSaving: boolean;
+  selectedRole: Role | null;
+  groups: PermissionGroup[];
+  onSavePermissions: (roleId: string, permissionIds: string[]) => Promise<void>;
+  onGrantAllPermissions: (roleId: string) => Promise<void>;
+  isSubmitting: boolean;
 }
 
 export function RolePermissionMatrix({
-  role,
-  permissionGroups,
-  allPermissions,
-  onSaveBatch,
-  onGrantAll,
-  isSaving,
+  selectedRole,
+  groups,
+  onSavePermissions,
+  onGrantAllPermissions,
+  isSubmitting,
 }: RolePermissionMatrixProps) {
-  // Currently assigned permission IDs in local state for batch editing
-  const initialAssignedIds = React.useMemo(() => {
-    return (role.rolePermissions || []).map((rp) => rp.permissionId || rp.permission?.id).filter(Boolean);
-  }, [role]);
-
-  const [selectedPermissionIds, setSelectedPermissionIds] = useState<string[]>(initialAssignedIds);
+  const [selectedPermissionIds, setSelectedPermissionIds] = useState<string[]>([]);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   useEffect(() => {
-    setSelectedPermissionIds(initialAssignedIds);
-  }, [initialAssignedIds]);
+    if (selectedRole) {
+      const initialIds =
+        selectedRole.permissions?.map((p: Permission) => p.id) ||
+        selectedRole.rolePermissions?.map((rp) => rp.permissionId || rp.permission?.id) ||
+        [];
+      setSelectedPermissionIds(initialIds);
+      setHasUnsavedChanges(false);
+    }
+  }, [selectedRole]);
 
-  const hasUnsavedChanges = React.useMemo(() => {
-    if (selectedPermissionIds.length !== initialAssignedIds.length) return true;
-    const initialSet = new Set(initialAssignedIds);
-    return selectedPermissionIds.some((id) => !initialSet.has(id));
-  }, [selectedPermissionIds, initialAssignedIds]);
-
-  const handleToggle = (permissionId: string) => {
-    setSelectedPermissionIds((prev) =>
-      prev.includes(permissionId)
-        ? prev.filter((id) => id !== permissionId)
-        : [...prev, permissionId],
+  if (!selectedRole) {
+    return (
+      <div className="flex flex-col items-center justify-center p-12 text-center rounded-2xl bg-white border border-slate-200/90 shadow-xs h-full min-h-[350px]">
+        <ShieldCheck className="w-12 h-12 text-slate-300 mb-3" />
+        <h3 className="text-base font-bold text-slate-900">Select a Role</h3>
+        <p className="text-xs text-slate-500 max-w-sm mt-1">
+          Select a role from the left sidebar to configure its module action permissions matrix.
+        </p>
+      </div>
     );
+  }
+
+  const handleTogglePermission = (permissionId: string) => {
+    setSelectedPermissionIds((prev) => {
+      const updated = prev.includes(permissionId)
+        ? prev.filter((id) => id !== permissionId)
+        : [...prev, permissionId];
+      setHasUnsavedChanges(true);
+      return updated;
+    });
   };
 
-  const handleSelectModuleAll = (group: PermissionGroup) => {
-    const groupPermIds = (group.permissions || []).map((p) => p.id);
-    setSelectedPermissionIds((prev) => Array.from(new Set([...prev, ...groupPermIds])));
-  };
+  const handleToggleModuleAll = (group: PermissionGroup) => {
+    const groupPermIds = group.permissions?.map((p) => p.id) || [];
+    const allSelected = groupPermIds.every((id) => selectedPermissionIds.includes(id));
 
-  const handleDeselectModuleAll = (group: PermissionGroup) => {
-    const groupPermIds = new Set((group.permissions || []).map((p) => p.id));
-    setSelectedPermissionIds((prev) => prev.filter((id) => !groupPermIds.has(id)));
-  };
-
-  const handleReset = () => {
-    setSelectedPermissionIds(initialAssignedIds);
+    setSelectedPermissionIds((prev) => {
+      let updated: string[];
+      if (allSelected) {
+        updated = prev.filter((id) => !groupPermIds.includes(id));
+      } else {
+        updated = Array.from(new Set([...prev, ...groupPermIds]));
+      }
+      setHasUnsavedChanges(true);
+      return updated;
+    });
   };
 
   const handleSave = async () => {
-    await onSaveBatch(role.id, selectedPermissionIds);
+    await onSavePermissions(selectedRole.id, selectedPermissionIds);
+    setHasUnsavedChanges(false);
+  };
+
+  const handleGrantAll = async () => {
+    if (window.confirm(`Are you sure you want to grant ALL system permissions to role "${selectedRole.name}"?`)) {
+      await onGrantAllPermissions(selectedRole.id);
+    }
   };
 
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-6 backdrop-blur-md shadow-2xl space-y-6">
-      {/* Header & Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-800 pb-5">
+    <div className="rounded-2xl border border-slate-200/90 bg-white shadow-xs p-6 space-y-6">
+      {/* Header Actions */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
         <div>
-          <div className="flex items-center gap-2.5">
-            <h3 className="text-xl font-bold text-slate-100">{role.name}</h3>
-            {hasUnsavedChanges && (
-              <span className="px-2.5 py-0.5 rounded-full bg-amber-950/80 text-amber-400 border border-amber-500/30 text-xs font-semibold animate-pulse">
-                Unsaved Changes
+          <div className="flex items-center gap-2">
+            <h3 className="text-lg font-extrabold text-slate-900">{selectedRole.name}</h3>
+            {selectedRole.isSystemRole && (
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-lime-100 text-lime-900 border border-lime-200">
+                System Role
               </span>
             )}
           </div>
-          <p className="text-xs text-slate-400 mt-1">
-            Toggle permissions or manage module actions for this role
+          <p className="text-xs text-slate-500 mt-0.5 font-medium">
+            Configure permission access matrix for {selectedRole.name}
           </p>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
-          {hasUnsavedChanges && (
-            <button
-              onClick={handleReset}
-              disabled={isSaving}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
-            >
-              <RotateCcw className="w-3.5 h-3.5" /> Reset
-            </button>
-          )}
-
+        <div className="flex items-center gap-2.5">
           <button
-            onClick={() => onGrantAll(role.id)}
-            disabled={isSaving || role.name === 'SUPER_ADMIN'}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-purple-950/60 text-purple-300 border border-purple-500/30 hover:bg-purple-900/60 transition-colors disabled:opacity-50"
+            onClick={handleGrantAll}
+            disabled={isSubmitting}
+            className="px-3.5 py-2 rounded-xl text-xs font-bold bg-lime-100 text-lime-900 border border-lime-200 hover:bg-lime-200 transition-all flex items-center gap-1.5 shadow-xs disabled:opacity-50"
           >
-            <Wand2 className="w-3.5 h-3.5" /> Grant All System Permissions
+            <Sparkles className="w-4 h-4 text-lime-700" /> Grant All Permissions
           </button>
 
           <button
             onClick={handleSave}
-            disabled={!hasUnsavedChanges || isSaving}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition-all shadow-lg shadow-emerald-950/50 disabled:opacity-40"
+            disabled={isSubmitting || !hasUnsavedChanges}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm ${
+              hasUnsavedChanges
+                ? 'bg-emerald-700 hover:bg-emerald-800 text-white animate-pulse'
+                : 'bg-slate-100 text-slate-400 border border-slate-200'
+            } disabled:opacity-50`}
           >
-            <Save className="w-3.5 h-3.5" /> {isSaving ? 'Saving...' : 'Save Matrix'}
+            <Save className="w-4 h-4" /> {isSubmitting ? 'Saving...' : 'Save Matrix'}
           </button>
         </div>
       </div>
 
-      {/* Permission Matrix Grid */}
-      <div className="space-y-4">
-        {permissionGroups.map((group) => {
-          const groupPerms = group.permissions || [];
-          const allGroupSelected =
-            groupPerms.length > 0 &&
-            groupPerms.every((p) => selectedPermissionIds.includes(p.id));
+      {hasUnsavedChanges && (
+        <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold flex items-center gap-2">
+          <RefreshCw className="w-4 h-4 text-amber-600 animate-spin" />
+          <span>Unsaved changes in matrix. Click "Save Matrix" to commit updates.</span>
+        </div>
+      )}
+
+      {/* Permission Modules Matrix */}
+      <div className="space-y-6">
+        {groups.map((group) => {
+          const groupPermIds = group.permissions?.map((p) => p.id) || [];
+          const isAllModuleSelected =
+            groupPermIds.length > 0 && groupPermIds.every((id) => selectedPermissionIds.includes(id));
 
           return (
-            <div
-              key={group.id}
-              className="rounded-xl border border-slate-800/80 bg-slate-950/60 p-4 transition-all"
-            >
-              <div className="flex items-center justify-between border-b border-slate-800/60 pb-3 mb-3">
-                <div>
-                  <h4 className="font-semibold text-slate-200 text-sm capitalize">{group.name}</h4>
-                  <span className="text-[11px] text-slate-400">{group.description}</span>
-                </div>
+            <div key={group.module} className="rounded-xl border border-slate-200/80 bg-slate-50/50 p-4 space-y-3">
+              <div className="flex items-center justify-between border-b border-slate-200/60 pb-2.5">
+                <span className="font-bold text-xs text-slate-900 capitalize tracking-wide flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-600" />
+                  {group.module} Module
+                </span>
 
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() =>
-                      allGroupSelected
-                        ? handleDeselectModuleAll(group)
-                        : handleSelectModuleAll(group)
-                    }
-                    className="text-xs text-emerald-400 hover:underline font-medium"
-                  >
-                    {allGroupSelected ? 'Deselect Module' : 'Select All Module'}
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => handleToggleModuleAll(group)}
+                  className="text-xs font-bold text-emerald-800 hover:text-emerald-900 flex items-center gap-1.5"
+                >
+                  {isAllModuleSelected ? (
+                    <>
+                      <CheckSquare className="w-4 h-4 text-emerald-700" /> Deselect All
+                    </>
+                  ) : (
+                    <>
+                      <Square className="w-4 h-4 text-slate-400" /> Select All
+                    </>
+                  )}
+                </button>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                {groupPerms.map((perm) => {
-                  const isChecked = selectedPermissionIds.includes(perm.id);
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                {group.permissions?.map((p) => {
+                  const isChecked = selectedPermissionIds.includes(p.id);
 
                   return (
                     <label
-                      key={perm.id}
-                      onClick={() => handleToggle(perm.id)}
-                      className={`flex items-center gap-2.5 p-2.5 rounded-xl border cursor-pointer select-none transition-all ${
+                      key={p.id}
+                      onClick={() => handleTogglePermission(p.id)}
+                      className={`flex items-center justify-between p-3 rounded-xl border text-xs font-semibold transition-all cursor-pointer select-none ${
                         isChecked
-                          ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-200 shadow-sm'
-                          : 'bg-slate-900/50 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-300'
+                          ? 'bg-white border-emerald-300 text-emerald-900 shadow-xs'
+                          : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
                       }`}
                     >
-                      {isChecked ? (
-                        <CheckSquare className="w-4 h-4 text-emerald-400 shrink-0" />
-                      ) : (
-                        <Square className="w-4 h-4 text-slate-600 shrink-0" />
-                      )}
-                      <div className="min-w-0">
-                        <div className="text-xs font-semibold capitalize truncate">{perm.action}</div>
-                        <div className="text-[10px] font-mono text-slate-500 truncate">{perm.key}</div>
-                      </div>
+                      <span className="font-mono text-xs">{p.action}</span>
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={() => {}}
+                        className="w-4 h-4 accent-emerald-600 rounded border-slate-300"
+                      />
                     </label>
                   );
                 })}

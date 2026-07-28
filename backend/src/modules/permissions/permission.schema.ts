@@ -52,8 +52,8 @@ export const permissionQuerySchema = z.object({
   query: z.object({
     page: z.coerce.number().int().positive().optional().default(1),
     limit: z.coerce.number().int().positive().max(100).optional().default(20),
-    search: z.string().optional(),
-    module: z.string().optional(),
+    search: z.string().optional().transform((val) => (val?.trim() === '' ? undefined : val)),
+    module: z.string().optional().transform((val) => (val?.trim() === '' ? undefined : val)),
     isCustom: z
       .string()
       .optional()

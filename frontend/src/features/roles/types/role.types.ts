@@ -5,6 +5,7 @@ export interface Role {
   name: string;
   description: string | null;
   isSystemRole: boolean;
+  permissions?: Permission[];
   rolePermissions?: Array<{
     id: string;
     roleId: string;

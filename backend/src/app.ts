@@ -27,14 +27,28 @@ app.use(requestId);
 // 2. HTTP request logger — binds request ID from step 1
 app.use(httpLogger);
 
-// 3. Helmet — security headers (Content-Security-Policy, HSTS, etc.)
-app.use(helmet());
+// 3. Helmet — security headers with cross-origin resource policy enabled for API
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+  }),
+);
 
 // 4. CORS — environment-driven origin, credentials support for HttpOnly cookies
 app.use(
   cors({
-    origin: config.corsOrigin === '*' ? '*' : config.corsOrigin.split(',').map((o) => o.trim()),
-    credentials: true,         // Required for HttpOnly cookie exchange
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      const allowedOrigins = config.corsOrigin === '*'
+        ? ['*']
+        : config.corsOrigin.split(',').map((o) => o.trim());
+
+      if (allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(null, false);
+    },
+    credentials: true, // Required for HttpOnly cookie exchange
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-ID'],
     exposedHeaders: ['X-Request-ID'],
