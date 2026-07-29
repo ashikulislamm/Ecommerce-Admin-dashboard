@@ -8,6 +8,7 @@ import mediaRoutes from '../modules/media/media.routes.js';
 import categoryRoutes from '../modules/categories/category.routes.js';
 import brandRoutes from '../modules/brands/brand.routes.js';
 import attributeRoutes from '../modules/attributes/attribute.routes.js';
+import productRoutes from '../modules/products/product.routes.js';
 import testRoutes from './test.routes.js';
 
 const router = Router();
@@ -21,6 +22,7 @@ router.use('/media', mediaRoutes);
 router.use('/categories', categoryRoutes);
 router.use('/brands', brandRoutes);
 router.use('/attributes', attributeRoutes);
+router.use('/products', productRoutes);
 router.use('/test', testRoutes);
 
 export default router;

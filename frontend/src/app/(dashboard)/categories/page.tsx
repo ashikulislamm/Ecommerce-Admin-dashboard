@@ -5,16 +5,21 @@ import { useCategoryTree, useCategories, useDeleteCategory } from '@/features/ca
 import { CategoryTreeView } from '@/features/categories/components/CategoryTreeView';
 import { CreateCategoryModal } from '@/features/categories/components/CreateCategoryModal';
 import { ConfirmDeleteModal } from '@/components/ui/ConfirmDeleteModal';
+import { PermissionGate, PermissionDeniedBanner } from '@/components/auth/PermissionGate';
+import { useAuth } from '@/components/providers/AuthProvider';
 import { toast } from '@/lib/toast';
 import { Plus, RefreshCw, GitBranch, List } from 'lucide-react';
 import type { CategoryItem } from '@/features/categories/types/category.types';
 
 export default function CategoriesPage() {
+  const { hasPermission } = useAuth();
   const [viewMode, setViewMode] = useState<'tree' | 'flat'>('tree');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedParent, setSelectedParent] = useState<CategoryItem | null>(null);
   const [selectedEdit, setSelectedEdit] = useState<CategoryItem | null>(null);
   const [deletingCategory, setDeletingCategory] = useState<CategoryItem | null>(null);
+
+  const canRead = hasPermission('categories:read');
 
   const { data: treeData, isLoading: isTreeLoading, refetch: refetchTree } = useCategoryTree();
   const { data: flatData, isLoading: isFlatLoading, refetch: refetchFlat } = useCategories({ page: 1, limit: 100 });
@@ -51,6 +56,10 @@ export default function CategoriesPage() {
     }
   };
 
+  if (!canRead) {
+    return <PermissionDeniedBanner message="You do not have permission to access Category Management." />;
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -59,13 +68,16 @@ export default function CategoriesPage() {
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">Category Hierarchy & Management</h1>
           <p className="text-xs text-slate-500 mt-1">Organize products into unlimited nested categories and parent trees.</p>
         </div>
-        <button
-          onClick={handleOpenAddRoot}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold shadow-xs transition-all"
-        >
-          <Plus className="w-4 h-4" />
-          Create Root Category
-        </button>
+
+        <PermissionGate permission="categories:create">
+          <button
+            onClick={handleOpenAddRoot}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold shadow-xs transition-all"
+          >
+            <Plus className="w-4 h-4" />
+            Create Root Category
+          </button>
+        </PermissionGate>
       </div>
 
       {/* Toolbar */}

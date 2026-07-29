@@ -5,11 +5,14 @@ import { useAttributes, useDeleteAttribute } from '@/features/attributes/hooks/u
 import { CreateAttributeModal } from '@/features/attributes/components/CreateAttributeModal';
 import { AttributeValueModal } from '@/features/attributes/components/AttributeValueModal';
 import { ConfirmDeleteModal } from '@/components/ui/ConfirmDeleteModal';
+import { PermissionGate, PermissionDeniedBanner } from '@/components/auth/PermissionGate';
+import { useAuth } from '@/components/providers/AuthProvider';
 import { toast } from '@/lib/toast';
 import { Plus, Search, Filter, RefreshCw, Sliders, Edit2, Trash2, Settings2 } from 'lucide-react';
 import type { AttributeItem, AttributeType } from '@/features/attributes/types/attribute.types';
 
 export default function AttributesPage() {
+  const { hasPermission } = useAuth();
   const [search, setSearch] = useState('');
   const [type, setType] = useState<AttributeType | ''>('');
   const [page, setPage] = useState(1);
@@ -17,6 +20,8 @@ export default function AttributesPage() {
   const [editingAttribute, setEditingAttribute] = useState<AttributeItem | null>(null);
   const [managingValueAttribute, setManagingValueAttribute] = useState<AttributeItem | null>(null);
   const [deletingAttribute, setDeletingAttribute] = useState<AttributeItem | null>(null);
+
+  const canRead = hasPermission('attributes:read');
 
   const { data, isLoading, refetch } = useAttributes({
     page,
@@ -49,6 +54,10 @@ export default function AttributesPage() {
     }
   };
 
+  if (!canRead) {
+    return <PermissionDeniedBanner message="You do not have permission to access Product Attributes." />;
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -57,13 +66,16 @@ export default function AttributesPage() {
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">Product Attributes</h1>
           <p className="text-xs text-slate-500 mt-1">Configure variant options (Color, Size, Material) and custom display swatches.</p>
         </div>
-        <button
-          onClick={handleOpenCreate}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold shadow-xs transition-all"
-        >
-          <Plus className="w-4 h-4" />
-          Create Attribute
-        </button>
+
+        <PermissionGate permission="attributes:create">
+          <button
+            onClick={handleOpenCreate}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold shadow-xs transition-all"
+          >
+            <Plus className="w-4 h-4" />
+            Create Attribute
+          </button>
+        </PermissionGate>
       </div>
 
       {/* Toolbar */}

@@ -13,14 +13,19 @@ import { RoleList } from '@/features/roles/components/RoleList';
 import { RolePermissionMatrix } from '@/features/roles/components/RolePermissionMatrix';
 import { CreateRoleModal } from '@/features/roles/components/CreateRoleModal';
 import { ConfirmDeleteModal } from '@/components/ui/ConfirmDeleteModal';
+import { PermissionGate, PermissionDeniedBanner } from '@/components/auth/PermissionGate';
+import { useAuth } from '@/components/providers/AuthProvider';
 import type { Role } from '@/features/roles/types/role.types';
 import { toast } from '@/lib/toast';
 import { ShieldCheck, Plus } from 'lucide-react';
 
 export default function RolesPage() {
+  const { hasPermission } = useAuth();
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [deletingRole, setDeletingRole] = useState<Role | null>(null);
+
+  const canRead = hasPermission('roles:read');
 
   // Queries
   const { data: rolesResponse, isLoading: isLoadingRoles } = useRoles({ page: 1, limit: 100 });
@@ -29,7 +34,6 @@ export default function RolesPage() {
   const roles = rolesResponse?.data || [];
   const groups = groupsResponse?.data || [];
 
-  // Auto-select first role on load
   useEffect(() => {
     if (roles.length > 0 && !selectedRole) {
       setSelectedRole(roles[0]);
@@ -87,6 +91,10 @@ export default function RolesPage() {
     }
   };
 
+  if (!canRead) {
+    return <PermissionDeniedBanner message="You do not have permission to access Role Management." />;
+  }
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* Header */}
@@ -105,12 +113,14 @@ export default function RolesPage() {
           </div>
         </div>
 
-        <button
-          onClick={() => setIsCreateModalOpen(true)}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs transition-all"
-        >
-          <Plus className="w-4 h-4" /> Create Role
-        </button>
+        <PermissionGate permission="roles:create">
+          <button
+            onClick={() => setIsCreateModalOpen(true)}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs transition-all"
+          >
+            <Plus className="w-4 h-4" /> Create Role
+          </button>
+        </PermissionGate>
       </div>
 
       {/* Grid Layout */}

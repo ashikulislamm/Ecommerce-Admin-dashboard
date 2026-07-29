@@ -3,14 +3,16 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { apiClient } from '@/lib/api-client';
 
-interface User {
+export interface User {
   id: string;
   email: string;
   firstName?: string;
   lastName?: string;
   role?: {
+    id: string;
     name: string;
   };
+  permissions?: string[];
 }
 
 interface AuthContextType {
@@ -20,6 +22,8 @@ interface AuthContextType {
   isLoading: boolean;
   login: (email?: string, password?: string) => Promise<void>;
   logout: () => Promise<void>;
+  hasPermission: (key?: string) => boolean;
+  hasAnyPermission: (keys: string[]) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -29,6 +33,8 @@ const AuthContext = createContext<AuthContextType>({
   isLoading: true,
   login: async () => {},
   logout: async () => {},
+  hasPermission: () => true,
+  hasAnyPermission: () => true,
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -36,7 +42,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Initialize auth state from localStorage or auto-fetch current user
   useEffect(() => {
     const initAuth = async () => {
       const storedToken = localStorage.getItem('accessToken');
@@ -89,6 +94,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const hasPermission = (key?: string): boolean => {
+    if (!key) return true;
+    if (!user) return false;
+    if (user.role?.name === 'SUPER_ADMIN') return true;
+    if (user.permissions?.includes('*')) return true;
+    return user.permissions?.includes(key) ?? true;
+  };
+
+  const hasAnyPermission = (keys: string[]): boolean => {
+    if (!keys || keys.length === 0) return true;
+    return keys.some((k) => hasPermission(k));
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -98,6 +116,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isLoading,
         login,
         logout,
+        hasPermission,
+        hasAnyPermission,
       }}
     >
       {children}

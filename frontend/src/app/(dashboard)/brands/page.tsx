@@ -4,17 +4,22 @@ import React, { useState } from 'react';
 import { useBrands, useDeleteBrand } from '@/features/brands/hooks/useBrands';
 import { CreateBrandModal } from '@/features/brands/components/CreateBrandModal';
 import { ConfirmDeleteModal } from '@/components/ui/ConfirmDeleteModal';
+import { PermissionGate, PermissionDeniedBanner } from '@/components/auth/PermissionGate';
+import { useAuth } from '@/components/providers/AuthProvider';
 import { toast } from '@/lib/toast';
 import { Plus, Search, Filter, RefreshCw, Award, Edit2, Trash2 } from 'lucide-react';
 import type { BrandItem, BrandStatus } from '@/features/brands/types/brand.types';
 
 export default function BrandsPage() {
+  const { hasPermission } = useAuth();
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<BrandStatus | ''>('');
   const [page, setPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingBrand, setEditingBrand] = useState<BrandItem | null>(null);
   const [deletingBrand, setDeletingBrand] = useState<BrandItem | null>(null);
+
+  const canRead = hasPermission('brands:read');
 
   const { data, isLoading, refetch } = useBrands({
     page,
@@ -47,6 +52,10 @@ export default function BrandsPage() {
     }
   };
 
+  if (!canRead) {
+    return <PermissionDeniedBanner message="You do not have permission to access Brand Management." />;
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -55,13 +64,16 @@ export default function BrandsPage() {
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">Brand Management</h1>
           <p className="text-xs text-slate-500 mt-1">Manage manufacturer & product brand identities across the catalog.</p>
         </div>
-        <button
-          onClick={handleOpenCreate}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold shadow-xs transition-all"
-        >
-          <Plus className="w-4 h-4" />
-          Add New Brand
-        </button>
+
+        <PermissionGate permission="brands:create">
+          <button
+            onClick={handleOpenCreate}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold shadow-xs transition-all"
+          >
+            <Plus className="w-4 h-4" />
+            Add New Brand
+          </button>
+        </PermissionGate>
       </div>
 
       {/* Search & Filter Toolbar */}

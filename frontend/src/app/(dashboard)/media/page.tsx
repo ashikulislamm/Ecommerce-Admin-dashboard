@@ -5,11 +5,14 @@ import { useMedia, useDeleteMedia, useUpdateMedia } from '@/features/media/hooks
 import { MediaGrid } from '@/features/media/components/MediaGrid';
 import { UploadMediaModal } from '@/features/media/components/UploadMediaModal';
 import { ConfirmDeleteModal } from '@/components/ui/ConfirmDeleteModal';
+import { PermissionGate, PermissionDeniedBanner } from '@/components/auth/PermissionGate';
+import { useAuth } from '@/components/providers/AuthProvider';
 import { toast } from '@/lib/toast';
 import { Upload, Search, Filter, RefreshCw, X, Loader2 } from 'lucide-react';
 import type { MediaItem, MediaType } from '@/features/media/types/media.types';
 
 export default function MediaPage() {
+  const { hasPermission } = useAuth();
   const [search, setSearch] = useState('');
   const [mediaType, setMediaType] = useState<MediaType | ''>('');
   const [page, setPage] = useState(1);
@@ -18,6 +21,8 @@ export default function MediaPage() {
   const [editTitle, setEditTitle] = useState('');
   const [editAltText, setEditAltText] = useState('');
   const [deletingItem, setDeletingItem] = useState<MediaItem | null>(null);
+
+  const canRead = hasPermission('media:read');
 
   const { data, isLoading, refetch } = useMedia({
     page,
@@ -61,6 +66,10 @@ export default function MediaPage() {
     }
   };
 
+  if (!canRead) {
+    return <PermissionDeniedBanner message="You do not have permission to access Media Assets Library." />;
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -69,13 +78,16 @@ export default function MediaPage() {
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">Media Assets Library</h1>
           <p className="text-xs text-slate-500 mt-1">Upload, organize, and manage physical media files and thumbnails.</p>
         </div>
-        <button
-          onClick={() => setIsUploadOpen(true)}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold shadow-xs transition-all"
-        >
-          <Upload className="w-4 h-4" />
-          Upload New Assets
-        </button>
+
+        <PermissionGate permission="media:create">
+          <button
+            onClick={() => setIsUploadOpen(true)}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold shadow-xs transition-all"
+          >
+            <Upload className="w-4 h-4" />
+            Upload New Assets
+          </button>
+        </PermissionGate>
       </div>
 
       {/* Search & Filter Toolbar */}

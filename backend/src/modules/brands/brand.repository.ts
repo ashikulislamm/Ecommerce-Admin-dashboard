@@ -70,7 +70,7 @@ export class BrandRepository {
 
   static async countProducts(brandId: string): Promise<number> {
     return prisma.product.count({
-      where: { brandId },
+      where: { brandId, deletedAt: null },
     });
   }
 

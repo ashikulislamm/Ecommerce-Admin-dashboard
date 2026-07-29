@@ -26,24 +26,26 @@ interface NavItem {
   label: string;
   href: string;
   icon: React.ElementType;
+  permission?: string;
 }
 
 const NAV_ITEMS: NavItem[] = [
   { label: 'Overview', href: '/dashboard', icon: LayoutDashboard },
-  { label: 'Media Library', href: '/media', icon: ImageIcon },
-  { label: 'Categories', href: '/categories', icon: FolderTree },
-  { label: 'Brands', href: '/brands', icon: Award },
-  { label: 'Attributes', href: '/attributes', icon: Sliders },
-  { label: 'User Management', href: '/users', icon: Users },
-  { label: 'Roles', href: '/roles', icon: ShieldCheck },
-  { label: 'Permissions', href: '/permissions', icon: Shield },
+  { label: 'Products', href: '/products', icon: Package, permission: 'products:read' },
+  { label: 'Media Library', href: '/media', icon: ImageIcon, permission: 'media:read' },
+  { label: 'Categories', href: '/categories', icon: FolderTree, permission: 'categories:read' },
+  { label: 'Brands', href: '/brands', icon: Award, permission: 'brands:read' },
+  { label: 'Attributes', href: '/attributes', icon: Sliders, permission: 'attributes:read' },
+  { label: 'User Management', href: '/users', icon: Users, permission: 'users:read' },
+  { label: 'Roles', href: '/roles', icon: ShieldCheck, permission: 'roles:read' },
+  { label: 'Permissions', href: '/permissions', icon: Shield, permission: 'permissions:read' },
   { label: 'Settings', href: '/settings', icon: Settings },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, isAuthenticated, isLoading, logout } = useAuth();
+  const { user, isAuthenticated, isLoading, logout, hasPermission } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Authentication Route Guard
@@ -53,7 +55,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
   }, [isLoading, isAuthenticated, router]);
 
-  // Render loading state while checking authentication token
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -67,10 +68,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     );
   }
 
-  // Prevent flash of protected dashboard if not authenticated
   if (!isAuthenticated) {
     return null;
   }
+
+  // Filter NAV_ITEMS by permission
+  const visibleNavItems = NAV_ITEMS.filter((item) => hasPermission(item.permission));
 
   const formatRouteTitle = (path: string | null) => {
     if (!path || path === '/dashboard') return 'Overview';
@@ -96,7 +99,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </button>
       </div>
 
-      {/* Modern Clean Sidebar */}
+      {/* Permission-Aware Sidebar */}
       <aside
         className={`w-full md:w-64 bg-white border-r border-slate-200/80 flex flex-col shrink-0 ${
           isMobileMenuOpen ? 'block' : 'hidden md:flex'
@@ -122,7 +125,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div className="px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
             Navigation Menu
           </div>
-          {NAV_ITEMS.map((item) => {
+          {visibleNavItems.map((item) => {
             const Icon = item.icon;
             const isActive =
               pathname === item.href ||

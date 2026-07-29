@@ -11,6 +11,8 @@ import { PermissionTable } from '@/features/permissions/components/PermissionTab
 import { PermissionGroupMatrix } from '@/features/permissions/components/PermissionGroupMatrix';
 import { CreatePermissionModal } from '@/features/permissions/components/CreatePermissionModal';
 import { ConfirmDeleteModal } from '@/components/ui/ConfirmDeleteModal';
+import { PermissionGate, PermissionDeniedBanner } from '@/components/auth/PermissionGate';
+import { useAuth } from '@/components/providers/AuthProvider';
 import type { Permission } from '@/features/permissions/types/permission.types';
 import { toast } from '@/lib/toast';
 import {
@@ -24,6 +26,7 @@ import {
 } from 'lucide-react';
 
 export default function PermissionsPage() {
+  const { hasPermission } = useAuth();
   const [viewMode, setViewMode] = useState<'table' | 'matrix'>('table');
   const [search, setSearch] = useState('');
   const [selectedModule, setSelectedModule] = useState('');
@@ -32,6 +35,8 @@ export default function PermissionsPage() {
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [deletingPermission, setDeletingPermission] = useState<Permission | null>(null);
+
+  const canRead = hasPermission('permissions:read');
 
   // TanStack Queries
   const { data: permissionsResponse, isLoading: isLoadingPermissions } = usePermissions({
@@ -77,6 +82,10 @@ export default function PermissionsPage() {
     }
   };
 
+  if (!canRead) {
+    return <PermissionDeniedBanner message="You do not have permission to access Permission Management." />;
+  }
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* Header */}
@@ -119,12 +128,14 @@ export default function PermissionsPage() {
             </button>
           </div>
 
-          <button
-            onClick={() => setIsCreateModalOpen(true)}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs transition-all"
-          >
-            <Plus className="w-4 h-4" /> Create Permission
-          </button>
+          <PermissionGate permission="permissions:create">
+            <button
+              onClick={() => setIsCreateModalOpen(true)}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs transition-all"
+            >
+              <Plus className="w-4 h-4" /> Create Permission
+            </button>
+          </PermissionGate>
         </div>
       </div>
 

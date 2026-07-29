@@ -2,152 +2,187 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { ShieldCheck, Mail, Lock, LogIn, AlertCircle, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '@/components/providers/AuthProvider';
+import {
+  ShieldCheck,
+  Lock,
+  Mail,
+  Eye,
+  EyeOff,
+  Loader2,
+  AlertCircle,
+  Building2,
+  Sparkles,
+  CheckCircle2,
+} from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
   const { login, isAuthenticated } = useAuth();
-  const [email, setEmail] = useState('admin@example.com');
-  const [password, setPassword] = useState('Admin123!');
-  const [isLoading, setIsLoading] = useState(false);
+
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // If already authenticated, redirect to dashboard
   useEffect(() => {
     if (isAuthenticated) {
       router.replace('/dashboard');
     }
   }, [isAuthenticated, router]);
 
-  const handleLoginSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
-    setIsLoading(true);
+    setIsSubmitting(true);
 
     try {
       await login(email, password);
-      router.replace('/dashboard');
+      router.push('/dashboard');
     } catch (err: any) {
-      setErrorMsg(err.message || 'Invalid credentials or connection error');
+      setErrorMsg(err.message || 'Invalid email address or password.');
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
-  const handleQuickSeedLogin = async () => {
+  const fillDemoAdmin = () => {
+    setEmail('admin@example.com');
+    setPassword('Admin123!');
     setErrorMsg(null);
-    setIsLoading(true);
-    try {
-      await login('admin@example.com', 'Admin123!');
-      router.replace('/dashboard');
-    } catch (err: any) {
-      setErrorMsg(err.message || 'Login failed');
-    } finally {
-      setIsLoading(false);
-    }
   };
 
   return (
-    <div className="w-full max-w-md mx-auto bg-white border border-slate-200/90 rounded-3xl p-8 shadow-xl shadow-slate-200/60 space-y-6">
-      {/* Header */}
-      <div className="text-center space-y-2">
-        <div className="inline-flex p-3.5 rounded-2xl bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm mb-1">
-          <ShieldCheck className="w-8 h-8" />
-        </div>
-        <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">
-          Apex ERP Portal
-        </h1>
-        <p className="text-xs font-medium text-slate-500">
-          Sign in to access your enterprise admin dashboard
-        </p>
-      </div>
+    <div className="w-full min-h-screen bg-slate-50 flex items-center justify-center p-4 sm:p-6 lg:p-8 relative overflow-hidden font-sans text-slate-800 antialiased selection:bg-emerald-600 selection:text-white">
+      {/* Soft Background Orbs */}
+      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-emerald-100/50 rounded-full blur-3xl pointer-events-none -translate-y-1/2" />
+      <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-sky-100/50 rounded-full blur-3xl pointer-events-none translate-y-1/2" />
 
-      {/* Quick 1-Click Login Option */}
-      <div className="p-4 rounded-2xl bg-emerald-50/80 border border-emerald-200 text-slate-700 text-xs space-y-2">
-        <div className="flex items-center gap-2 font-bold text-emerald-800">
-          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-          <span>Demo Super Admin Sign In</span>
-        </div>
-        <p className="text-[11px] text-slate-600 leading-relaxed font-medium">
-          Sign in automatically using pre-configured Super Admin credentials (`admin@example.com`).
-        </p>
-        <button
-          type="button"
-          onClick={handleQuickSeedLogin}
-          disabled={isLoading}
-          className="w-full py-2 px-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-xs transition-all disabled:opacity-50"
-        >
-          {isLoading ? 'Signing in...' : 'Sign In as Super Admin'}
-        </button>
-      </div>
+      {/* Grid Overlay */}
+      <div
+        className="absolute inset-0 pointer-events-none opacity-[0.02]"
+        style={{
+          backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(15, 23, 42, 0.4) 1px, transparent 0)',
+          backgroundSize: '24px 24px',
+        }}
+      />
 
-      {errorMsg && (
-        <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2.5">
-          <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
-          <span>{errorMsg}</span>
-        </div>
-      )}
-
-      {/* Credentials Form */}
-      <form onSubmit={handleLoginSubmit} className="space-y-4">
-        <div>
-          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-            Email Address
-          </label>
-          <div className="relative">
-            <Mail className="absolute left-3.5 top-3 w-4 h-4 text-slate-400" />
-            <input
-              type="email"
-              placeholder="admin@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-slate-200 bg-slate-50/50 text-slate-900 placeholder-slate-400 focus:bg-white focus:border-emerald-600 focus:outline-none transition-colors font-medium"
-              required
-            />
+      <div className="w-full max-w-md relative z-10 my-auto">
+        {/* Main Card Container */}
+        <div className="bg-white border border-slate-200/90 shadow-2xl shadow-slate-200/70 rounded-3xl p-8 sm:p-10 space-y-6">
+          {/* Header & Logo */}
+          <div className="text-center space-y-3">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-700 text-white mx-auto flex items-center justify-center font-extrabold text-2xl shadow-lg shadow-emerald-900/15">
+              A
+            </div>
+            <div>
+              <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">
+                Apex Enterprise ERP
+              </h1>
+              <p className="text-xs font-medium text-slate-500 mt-1">
+                Sign in to your enterprise management portal
+              </p>
+            </div>
           </div>
-        </div>
 
-        <div>
-          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-            Password
-          </label>
-          <div className="relative">
-            <Lock className="absolute left-3.5 top-3 w-4 h-4 text-slate-400" />
-            <input
-              type="password"
-              placeholder="••••••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-slate-200 bg-slate-50/50 text-slate-900 placeholder-slate-400 focus:bg-white focus:border-emerald-600 focus:outline-none transition-colors font-mono"
-              required
-            />
+          {/* Quick Demo Seed Banner */}
+          <div className="p-3.5 rounded-2xl bg-emerald-50/80 border border-emerald-200/80 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-emerald-900 flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                Demo Credentials Available
+              </span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md">
+                Super Admin
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={fillDemoAdmin}
+              className="w-full py-2 px-3 rounded-xl bg-white hover:bg-emerald-100/60 border border-emerald-200 text-emerald-900 text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-emerald-700" />
+              Fill Super Admin Credentials
+            </button>
           </div>
-        </div>
 
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="w-full py-3 rounded-xl font-bold text-xs bg-slate-900 hover:bg-slate-800 text-white transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-50"
-        >
-          {isLoading ? (
-            'Signing in...'
-          ) : (
-            <>
-              <LogIn className="w-4 h-4" /> Sign In with Credentials
-            </>
+          {/* Error Message Alert */}
+          {errorMsg && (
+            <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-xs font-medium text-rose-800 flex items-start gap-2.5 animate-in fade-in">
+              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+              <span className="leading-relaxed">{errorMsg}</span>
+            </div>
           )}
-        </button>
-      </form>
 
-      <div className="pt-2 text-center border-t border-slate-100">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" /> Back to Home Page
-        </Link>
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-4 text-xs font-medium">
+            <div>
+              <label className="block font-bold text-slate-700 mb-1.5">Email Address</label>
+              <div className="relative">
+                <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="admin@example.com"
+                  className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 font-medium placeholder-slate-400 focus:bg-white focus:border-emerald-600 focus:ring-4 focus:ring-emerald-500/10 focus:outline-hidden transition-all"
+                />
+              </div>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="font-bold text-slate-700">Password</label>
+                <a href="#" className="text-[11px] font-bold text-emerald-700 hover:underline">
+                  Forgot Password?
+                </a>
+              </div>
+              <div className="relative">
+                <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••••••"
+                  className="w-full pl-10 pr-10 py-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 font-mono placeholder-slate-400 focus:bg-white focus:border-emerald-600 focus:ring-4 focus:ring-emerald-500/10 focus:outline-hidden transition-all"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="p-1 text-slate-400 hover:text-slate-700 absolute right-3 top-1/2 -translate-y-1/2"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            <div className="pt-2">
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full py-3.5 px-4 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-md shadow-emerald-900/15 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" /> Authenticating Session...
+                  </>
+                ) : (
+                  <>
+                    <ShieldCheck className="w-4 h-4" /> Sign In to ERP System
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+
+          {/* Footer Note */}
+          <div className="pt-3 border-t border-slate-100 text-center text-[11px] text-slate-400 font-medium">
+            Apex Enterprise Admin ERP System • SOC2 Compliant
+          </div>
+        </div>
       </div>
     </div>
   );

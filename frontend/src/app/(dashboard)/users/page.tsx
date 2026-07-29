@@ -13,6 +13,8 @@ import { UserTable } from '@/features/users/components/UserTable';
 import { CreateUserModal } from '@/features/users/components/CreateUserModal';
 import { UserRoleModal } from '@/features/users/components/UserRoleModal';
 import { ConfirmDeleteModal } from '@/components/ui/ConfirmDeleteModal';
+import { PermissionGate, PermissionDeniedBanner } from '@/components/auth/PermissionGate';
+import { useAuth } from '@/components/providers/AuthProvider';
 import type { User, UserStatus } from '@/features/users/types/user.types';
 import { toast } from '@/lib/toast';
 import {
@@ -24,6 +26,7 @@ import {
 } from 'lucide-react';
 
 export default function UsersPage() {
+  const { hasPermission } = useAuth();
   const [search, setSearch] = useState('');
   const [selectedRoleFilter, setSelectedRoleFilter] = useState('');
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<UserStatus | ''>('');
@@ -32,6 +35,8 @@ export default function UsersPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editingRoleUser, setEditingRoleUser] = useState<User | null>(null);
   const [deletingUser, setDeletingUser] = useState<User | null>(null);
+
+  const canRead = hasPermission('users:read');
 
   // TanStack Queries
   const { data: usersResponse, isLoading: isLoadingUsers } = useUsers({
@@ -101,6 +106,10 @@ export default function UsersPage() {
     }
   };
 
+  if (!canRead) {
+    return <PermissionDeniedBanner message="You do not have permission to access User Management." />;
+  }
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* Header */}
@@ -119,12 +128,14 @@ export default function UsersPage() {
           </div>
         </div>
 
-        <button
-          onClick={() => setIsCreateModalOpen(true)}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs transition-all"
-        >
-          <Plus className="w-4 h-4" /> Create User
-        </button>
+        <PermissionGate permission="users:create">
+          <button
+            onClick={() => setIsCreateModalOpen(true)}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs transition-all"
+          >
+            <Plus className="w-4 h-4" /> Create User
+          </button>
+        </PermissionGate>
       </div>
 
       {/* Control Bar & Filters */}
