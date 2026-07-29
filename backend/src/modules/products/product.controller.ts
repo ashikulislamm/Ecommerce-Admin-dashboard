@@ -1,22 +1,12 @@
 import type { Request, Response, NextFunction } from 'express';
-import { ProductService } from './product.service';
-import {
-  createSimpleProductSchema,
-  createVariableProductSchema,
-  updateProductSchema,
-  generateVariantsSchema,
-} from './product.schema';
+import { ProductService } from './product.service.js';
+import { ApiResponse } from '../../shared/responses/api-response.js';
 
 export class ProductController {
   static async createSimple(req: Request, res: Response, next: NextFunction) {
     try {
-      const validated = createSimpleProductSchema.parse(req.body);
-      const product = await ProductService.createSimpleProduct(validated as any);
-      res.status(201).json({
-        success: true,
-        message: 'Simple product created successfully',
-        data: product,
-      });
+      const product = await ProductService.createSimpleProduct(req.body as any);
+      return ApiResponse.success(res, 201, 'Simple product created successfully', product);
     } catch (err) {
       next(err);
     }
@@ -24,13 +14,8 @@ export class ProductController {
 
   static async createVariable(req: Request, res: Response, next: NextFunction) {
     try {
-      const validated = createVariableProductSchema.parse(req.body);
-      const product = await ProductService.createVariableProduct(validated as any);
-      res.status(201).json({
-        success: true,
-        message: 'Variable product created successfully',
-        data: product,
-      });
+      const product = await ProductService.createVariableProduct(req.body as any);
+      return ApiResponse.success(res, 201, 'Variable product created successfully', product);
     } catch (err) {
       next(err);
     }
@@ -38,14 +23,9 @@ export class ProductController {
 
   static async generateMatrix(req: Request, res: Response, next: NextFunction) {
     try {
-      const validated = generateVariantsSchema.parse(req.body);
       const baseSku = (req.body.baseSku as string) || 'PROD';
-      const matrix = ProductService.generateVariantMatrix(validated as any, baseSku);
-      res.status(200).json({
-        success: true,
-        message: 'Variant matrix generated successfully',
-        data: matrix,
-      });
+      const matrix = ProductService.generateVariantMatrix(req.body as any, baseSku);
+      return ApiResponse.success(res, 200, 'Variant matrix generated successfully', matrix);
     } catch (err) {
       next(err);
     }
@@ -67,13 +47,14 @@ export class ProductController {
         sortOrder: req.query.sortOrder as any,
       };
 
-      const result = await ProductService.getProducts(query);
-      res.status(200).json({
-        success: true,
-        message: 'Products retrieved successfully',
-        data: result.data,
-        meta: result.meta,
-      });
+      const result = await ProductService.getProducts(query as any);
+      return ApiResponse.success(
+        res,
+        200,
+        'Products retrieved successfully',
+        result.data,
+        result.meta,
+      );
     } catch (err) {
       next(err);
     }
@@ -81,13 +62,9 @@ export class ProductController {
 
   static async getProductById(req: Request, res: Response, next: NextFunction) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const product = await ProductService.getProductById(id);
-      res.status(200).json({
-        success: true,
-        message: 'Product retrieved successfully',
-        data: product,
-      });
+      return ApiResponse.success(res, 200, 'Product retrieved successfully', product);
     } catch (err) {
       next(err);
     }
@@ -95,14 +72,9 @@ export class ProductController {
 
   static async updateProduct(req: Request, res: Response, next: NextFunction) {
     try {
-      const { id } = req.params;
-      const validated = updateProductSchema.parse(req.body);
-      const product = await ProductService.updateProduct(id, validated as any);
-      res.status(200).json({
-        success: true,
-        message: 'Product updated successfully',
-        data: product,
-      });
+      const id = req.params.id as string;
+      const product = await ProductService.updateProduct(id, req.body as any);
+      return ApiResponse.success(res, 200, 'Product updated successfully', product);
     } catch (err) {
       next(err);
     }
@@ -110,15 +82,13 @@ export class ProductController {
 
   static async deleteProduct(req: Request, res: Response, next: NextFunction) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       await ProductService.deleteProduct(id);
-      res.status(200).json({
-        success: true,
-        message: 'Product deleted successfully',
-        data: null,
-      });
+      return ApiResponse.success(res, 200, 'Product deleted successfully', null);
     } catch (err) {
       next(err);
     }
   }
 }
+
+export default ProductController;
