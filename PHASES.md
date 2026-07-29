@@ -1272,7 +1272,7 @@ Permission Denied
 
 ***
 
-# Phase 22 — Session Restoration & Token Refresh
+# Phase 22 — Session Restoration & Token Refresh [COMPLETED]
 
 On page refresh:
 
@@ -1319,7 +1319,7 @@ Redirect Login
 
 ***
 
-# Phase 23 — Product Frontend
+# Phase 23 — Product Frontend [COMPLETED]
 
 The product form should be divided into sections.
 

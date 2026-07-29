@@ -122,9 +122,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         {/* Main Navigation */}
         <nav className="flex-1 px-3.5 py-4 space-y-1 overflow-y-auto">
-          <div className="px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-            Navigation Menu
-          </div>
           {visibleNavItems.map((item) => {
             const Icon = item.icon;
             const isActive =
@@ -194,17 +191,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <h2 className="text-lg font-extrabold text-slate-900 tracking-tight">
               {formatRouteTitle(pathname)}
             </h2>
-            <span className="hidden sm:inline-block w-1.5 h-1.5 rounded-full bg-slate-300" />
-            <span className="hidden sm:inline-block text-xs font-medium text-slate-400">
-              Enterprise Admin ERP System
-            </span>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold">
-              <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
-              Active Session
-            </div>
           </div>
         </header>
 

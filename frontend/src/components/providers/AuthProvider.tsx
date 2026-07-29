@@ -6,10 +6,11 @@ import { apiClient } from '@/lib/api-client';
 export interface User {
   id: string;
   email: string;
+  name?: string;
   firstName?: string;
   lastName?: string;
   role?: {
-    id: string;
+    id?: string;
     name: string;
   };
   permissions?: string[];
@@ -42,18 +43,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Initialize auth session on page refresh
   useEffect(() => {
     const initAuth = async () => {
-      const storedToken = localStorage.getItem('accessToken');
+      const storedToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
       if (storedToken) {
         setToken(storedToken);
         try {
-          const res = await apiClient<User>('/auth/me');
-          if (res.success && res.data) {
-            setUser(res.data);
+          // Endpoint is GET /auth/session
+          const res = await apiClient<{
+            user: {
+              id: string;
+              email: string;
+              name?: string;
+              firstName?: string;
+              lastName?: string;
+              roleName?: string;
+            };
+            permissions: string[];
+          }>('/auth/session');
+
+          if (res.success && res.data?.user) {
+            const userData = res.data.user;
+            setUser({
+              id: userData.id,
+              email: userData.email,
+              name: userData.name,
+              firstName: userData.firstName,
+              lastName: userData.lastName,
+              role: { name: userData.roleName || 'USER' },
+              permissions: res.data.permissions || [],
+            });
           }
         } catch (err) {
-          console.warn('Auth session check failed, token may be expired');
+          console.warn('Auth session restoration failed or token expired:', err);
+          setUser(null);
+          setToken(null);
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('accessToken');
+          }
         }
       }
       setIsLoading(false);
@@ -65,16 +93,53 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email = 'admin@example.com', password = 'Admin123!') => {
     setIsLoading(true);
     try {
-      const res = await apiClient<{ user: User; accessToken: string }>('/auth/login', {
+      const res = await apiClient<{
+        user: {
+          id: string;
+          email: string;
+          name?: string;
+          firstName?: string;
+          lastName?: string;
+          roleName: string;
+        };
+        accessToken: string;
+      }>('/auth/login', {
         method: 'POST',
         body: JSON.stringify({ email, password }),
       });
 
       if (res.success && res.data) {
         const { user: userData, accessToken } = res.data;
-        setUser(userData);
         setToken(accessToken);
-        localStorage.setItem('accessToken', accessToken);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('accessToken', accessToken);
+        }
+
+        // Fetch full session with permissions
+        try {
+          const sessionRes = await apiClient<{
+            user: any;
+            permissions: string[];
+          }>('/auth/session');
+
+          if (sessionRes.success && sessionRes.data) {
+            setUser({
+              id: userData.id,
+              email: userData.email,
+              name: userData.name,
+              role: { name: userData.roleName || 'USER' },
+              permissions: sessionRes.data.permissions || [],
+            });
+          }
+        } catch {
+          setUser({
+            id: userData.id,
+            email: userData.email,
+            name: userData.name,
+            role: { name: userData.roleName || 'USER' },
+            permissions: [],
+          });
+        }
       }
     } catch (err) {
       console.error('Login error:', err);
@@ -90,7 +155,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setUser(null);
       setToken(null);
-      localStorage.removeItem('accessToken');
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('accessToken');
+      }
     }
   };
 

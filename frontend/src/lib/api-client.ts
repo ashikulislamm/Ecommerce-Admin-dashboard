@@ -41,9 +41,54 @@ export class ApiError extends Error {
   }
 }
 
+// Single Shared Refresh Token Promise to prevent race conditions
+let refreshPromise: Promise<string | null> | null = null;
+
+async function refreshTokenShared(): Promise<string | null> {
+  if (refreshPromise) {
+    return refreshPromise;
+  }
+
+  refreshPromise = (async () => {
+    try {
+      const baseUrl = getBaseUrl();
+      const response = await fetch(`${baseUrl}/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
+
+      const data = await response.json().catch(() => null);
+
+      if (response.ok && data?.data?.accessToken) {
+        const newAccessToken = data.data.accessToken;
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('accessToken', newAccessToken);
+        }
+        return newAccessToken;
+      }
+    } catch (err) {
+      console.error('Session refresh failed:', err);
+    } finally {
+      refreshPromise = null;
+    }
+
+    // Clear session & redirect on refresh failure
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('accessToken');
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
+    }
+    return null;
+  })();
+
+  return refreshPromise;
+}
+
 export async function apiClient<T>(
   endpoint: string,
-  options: RequestInit = {},
+  options: RequestInit & { _isRetry?: boolean } = {},
 ): Promise<ApiResponseData<T>> {
   const baseUrl = getBaseUrl();
   const url = endpoint.startsWith('http') ? endpoint : `${baseUrl}${endpoint}`;
@@ -53,7 +98,6 @@ export async function apiClient<T>(
     headers.set('Content-Type', 'application/json');
   }
 
-  // Attach stored access token if available
   if (typeof window !== 'undefined') {
     const token = localStorage.getItem('accessToken');
     if (token && !headers.has('Authorization')) {
@@ -69,6 +113,24 @@ export async function apiClient<T>(
 
   const response = await fetch(url, config);
   const data = await response.json().catch(() => null);
+
+  // Handle 401 Unauthorized with Shared Token Refresh Queue
+  if (
+    response.status === 401 &&
+    !options._isRetry &&
+    !endpoint.includes('/auth/refresh') &&
+    !endpoint.includes('/auth/login')
+  ) {
+    const newAccessToken = await refreshTokenShared();
+    if (newAccessToken) {
+      headers.set('Authorization', `Bearer ${newAccessToken}`);
+      return apiClient<T>(endpoint, {
+        ...options,
+        headers,
+        _isRetry: true,
+      });
+    }
+  }
 
   if (!response.ok) {
     const errorMessage = data?.message || response.statusText || 'An unexpected error occurred';
