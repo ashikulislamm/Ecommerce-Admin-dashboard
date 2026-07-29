@@ -4,22 +4,21 @@ import React, { useState } from 'react';
 import {
   usePermissions,
   useCreatePermission,
-  useUpdatePermission,
   useDeletePermission,
   usePermissionGroups,
 } from '@/features/permissions/hooks/usePermissions';
 import { PermissionTable } from '@/features/permissions/components/PermissionTable';
 import { PermissionGroupMatrix } from '@/features/permissions/components/PermissionGroupMatrix';
 import { CreatePermissionModal } from '@/features/permissions/components/CreatePermissionModal';
+import { ConfirmDeleteModal } from '@/components/ui/ConfirmDeleteModal';
 import type { Permission } from '@/features/permissions/types/permission.types';
+import { toast } from '@/lib/toast';
 import {
   Shield,
   Search,
   Plus,
   Table as TableIcon,
   Grid,
-  AlertCircle,
-  CheckCircle2,
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
@@ -32,8 +31,7 @@ export default function PermissionsPage() {
   const [page, setPage] = useState(1);
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [editingPermission, setEditingPermission] = useState<Permission | null>(null);
-  const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [deletingPermission, setDeletingPermission] = useState<Permission | null>(null);
 
   // TanStack Queries
   const { data: permissionsResponse, isLoading: isLoadingPermissions } = usePermissions({
@@ -50,7 +48,6 @@ export default function PermissionsPage() {
   const meta = permissionsResponse?.meta;
   const groups = groupsResponse?.data || [];
 
-  // Extract unique module names for filter dropdown
   const modules = Array.from(new Set(groups.map((g) => g.module))).filter(Boolean);
 
   // Mutations
@@ -60,34 +57,30 @@ export default function PermissionsPage() {
   const handleCreateSubmit = async (payload: any) => {
     try {
       await createMutation.mutateAsync(payload);
-      setFeedback({ type: 'success', message: `Permission "${payload.name}" created successfully!` });
+      toast.success(`Permission "${payload.name}" created successfully!`);
+      setIsCreateModalOpen(false);
     } catch (err: any) {
-      setFeedback({ type: 'error', message: err.message || 'Failed to create permission' });
+      toast.error(err.message || 'Failed to create permission');
       throw err;
     }
   };
 
-  const handleDelete = async (permission: Permission) => {
-    if (!window.confirm(`Are you sure you want to delete permission "${permission.key}"?`)) {
-      return;
-    }
-
-    setFeedback(null);
+  const handleDeleteConfirm = async () => {
+    if (!deletingPermission) return;
     try {
-      await deleteMutation.mutateAsync(permission.id);
-      setFeedback({ type: 'success', message: `Permission "${permission.key}" deleted successfully.` });
+      await deleteMutation.mutateAsync(deletingPermission.id);
+      toast.success(`Permission "${deletingPermission.key}" deleted successfully.`);
+      setDeletingPermission(null);
     } catch (err: any) {
-      setFeedback({
-        type: 'error',
-        message: err.message || 'Cannot delete permission assigned to active roles.',
-      });
+      toast.error(err.message || 'Cannot delete permission assigned to active roles.');
+      setDeletingPermission(null);
     }
   };
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-2xl bg-white border border-slate-200/90 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-2xl bg-white border border-slate-200/90 shadow-xs">
         <div className="flex items-center gap-3.5">
           <div className="p-3 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200">
             <Shield className="w-6 h-6" />
@@ -102,132 +95,110 @@ export default function PermissionsPage() {
           </div>
         </div>
 
-        <button
-          onClick={() => setIsCreateModalOpen(true)}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-sm transition-all"
-        >
-          <Plus className="w-4 h-4" /> Create Permission
-        </button>
-      </div>
-
-      {/* Alert Notifications */}
-      {feedback && (
-        <div
-          className={`p-4 rounded-xl text-xs flex items-center justify-between border font-medium ${
-            feedback.type === 'success'
-              ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
-              : 'bg-rose-50 border-rose-200 text-rose-900'
-          }`}
-        >
-          <div className="flex items-center gap-2.5">
-            {feedback.type === 'success' ? (
-              <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
-            ) : (
-              <AlertCircle className="w-4 h-4 text-rose-700 shrink-0" />
-            )}
-            <span>{feedback.message}</span>
-          </div>
-          <button
-            onClick={() => setFeedback(null)}
-            className="text-slate-400 hover:text-slate-700 text-xs font-bold ml-4"
-          >
-            Dismiss
-          </button>
-        </div>
-      )}
-
-      {/* Control Bar & Filters */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200/90 shadow-xs">
-        <div className="flex flex-wrap items-center gap-3 flex-1">
-          <div className="relative flex-1 min-w-[200px]">
-            <Search className="absolute left-3.5 top-2.5 w-4 h-4 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search permissions by key or module..."
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
-              className="w-full pl-10 pr-4 py-2 text-xs rounded-xl bg-slate-50/50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:bg-white focus:border-emerald-600 focus:outline-none font-medium"
-            />
-          </div>
-
-          <div className="relative min-w-[150px]">
-            <select
-              value={selectedModule}
-              onChange={(e) => {
-                setSelectedModule(e.target.value);
-                setPage(1);
-              }}
-              className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50/50 border border-slate-200 text-slate-800 focus:bg-white focus:border-emerald-600 focus:outline-none font-medium capitalize"
+        <div className="flex items-center gap-3">
+          <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
+            <button
+              onClick={() => setViewMode('table')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                viewMode === 'table'
+                  ? 'bg-white text-slate-900 shadow-xs'
+                  : 'text-slate-500 hover:text-slate-900'
+              }`}
             >
-              <option value="">All Modules</option>
-              {modules.map((mod) => (
-                <option key={mod} value={mod}>
-                  {mod}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="relative min-w-[130px]">
-            <select
-              value={isCustomFilter === undefined ? '' : String(isCustomFilter)}
-              onChange={(e) => {
-                const val = e.target.value;
-                setIsCustomFilter(val === '' ? undefined : val === 'true');
-                setPage(1);
-              }}
-              className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50/50 border border-slate-200 text-slate-800 focus:bg-white focus:border-emerald-600 focus:outline-none font-medium"
+              <TableIcon className="w-3.5 h-3.5" /> Table
+            </button>
+            <button
+              onClick={() => setViewMode('matrix')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                viewMode === 'matrix'
+                  ? 'bg-white text-slate-900 shadow-xs'
+                  : 'text-slate-500 hover:text-slate-900'
+              }`}
             >
-              <option value="">All Types</option>
-              <option value="false">System</option>
-              <option value="true">Custom</option>
-            </select>
+              <Grid className="w-3.5 h-3.5" /> Matrix
+            </button>
           </div>
-        </div>
 
-        {/* View Switcher */}
-        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200/80">
           <button
-            onClick={() => setViewMode('table')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-              viewMode === 'table'
-                ? 'bg-white text-emerald-800 shadow-xs'
-                : 'text-slate-500 hover:text-slate-800'
-            }`}
+            onClick={() => setIsCreateModalOpen(true)}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs transition-all"
           >
-            <TableIcon className="w-3.5 h-3.5" /> Table
-          </button>
-          <button
-            onClick={() => setViewMode('matrix')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-              viewMode === 'matrix'
-                ? 'bg-white text-emerald-800 shadow-xs'
-                : 'text-slate-500 hover:text-slate-800'
-            }`}
-          >
-            <Grid className="w-3.5 h-3.5" /> Module Matrix
+            <Plus className="w-4 h-4" /> Create Permission
           </button>
         </div>
       </div>
 
-      {/* Main View */}
+      {/* View Switch */}
       {viewMode === 'table' ? (
         <>
+          {/* Control Bar & Filters */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200/90 shadow-xs">
+            <div className="flex flex-wrap items-center gap-3 flex-1">
+              <div className="relative flex-1 min-w-[200px]">
+                <Search className="absolute left-3.5 top-2.5 w-4 h-4 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search permissions by key, name..."
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setPage(1);
+                  }}
+                  className="w-full pl-10 pr-4 py-2 text-xs rounded-xl bg-slate-50/50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:bg-white focus:border-emerald-600 focus:outline-none font-medium"
+                />
+              </div>
+
+              <div className="relative min-w-[140px]">
+                <select
+                  value={selectedModule}
+                  onChange={(e) => {
+                    setSelectedModule(e.target.value);
+                    setPage(1);
+                  }}
+                  className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50/50 border border-slate-200 text-slate-800 focus:bg-white focus:border-emerald-600 focus:outline-none font-medium capitalize"
+                >
+                  <option value="">All Modules</option>
+                  {modules.map((m) => (
+                    <option key={m} value={m}>
+                      {m}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="relative min-w-[130px]">
+                <select
+                  value={isCustomFilter === undefined ? '' : isCustomFilter ? 'true' : 'false'}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setIsCustomFilter(val === '' ? undefined : val === 'true');
+                    setPage(1);
+                  }}
+                  className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50/50 border border-slate-200 text-slate-800 focus:bg-white focus:border-emerald-600 focus:outline-none font-medium"
+                >
+                  <option value="">All Types</option>
+                  <option value="false">System Built-in</option>
+                  <option value="true">Custom Actions</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Main Table */}
           <PermissionTable
             permissions={permissions}
             isLoading={isLoadingPermissions}
-            onEdit={(perm) => setEditingPermission(perm)}
-            onDelete={handleDelete}
+            onEdit={(perm) => toast.info(`Permission Key: ${perm.key}`)}
+            onDelete={(perm) => setDeletingPermission(perm)}
           />
 
+          {/* Pagination Controls */}
           {meta && meta.totalPages > 1 && (
             <div className="flex items-center justify-between border-t border-slate-200 pt-4 text-xs text-slate-500 font-medium">
               <div>
                 Showing page <span className="font-bold text-slate-900">{meta.page}</span> of{' '}
-                <span className="font-bold text-slate-900">{meta.totalPages}</span> ({meta.total} total permissions)
+                <span className="font-bold text-slate-900">{meta.totalPages}</span> ({meta.total}{' '}
+                total permissions)
               </div>
               <div className="flex items-center gap-2">
                 <button
@@ -252,12 +223,23 @@ export default function PermissionsPage() {
         <PermissionGroupMatrix groups={groups} isLoading={isLoadingGroups} />
       )}
 
-      {/* Create Modal */}
+      {/* Create Permission Modal */}
       <CreatePermissionModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onSubmit={handleCreateSubmit}
         isSubmitting={createMutation.isPending}
+      />
+
+      {/* Confirm Delete Modal */}
+      <ConfirmDeleteModal
+        isOpen={!!deletingPermission}
+        title="Delete Permission"
+        description="Are you sure you want to delete this permission key? Permissions assigned to active roles cannot be deleted."
+        itemName={deletingPermission?.key}
+        isPending={deleteMutation.isPending}
+        onClose={() => setDeletingPermission(null)}
+        onConfirm={handleDeleteConfirm}
       />
     </div>
   );

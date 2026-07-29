@@ -50,6 +50,14 @@ enum VariantStatus {
   INACTIVE
 }
 
+enum AttributeType {
+  DROPDOWN
+  RADIO
+  CHECKBOX
+  COLOR_SWATCH
+  IMAGE_SWATCH
+}
+
 // ==========================================
 // AUTHENTICATION & AUTHORIZATION MODELS
 // ==========================================
@@ -64,6 +72,7 @@ model User {
   role            Role             @relation(fields: [roleId], references: [id], onDelete: Restrict)
   status          UserStatus       @default(ACTIVE)
   refreshSessions RefreshSession[]
+  uploadedMedia   Media[]
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   deletedAt       DateTime?
@@ -160,15 +169,24 @@ model RefreshSession {
 
 model Media {
   id                  String                @id @default(uuid()) @db.Uuid
+  originalName        String                @default("")
   fileName            String
   storageKey          String
   url                 String?
+  thumbnailUrl        String?
   mimeType            String
   fileSize            Int
+  width               Int?
+  height              Int?
   mediaType           MediaType             @default(IMAGE)
+  title               String?
   altText             String?
   metadata            Json?
+  uploadedById        String?               @db.Uuid
+  uploadedBy          User?                 @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+  categories          Category[]
   brands              Brand[]
+  attributeValues     AttributeValue[]
   productMedia        ProductMedia[]
   variantMedia        VariantMedia[]
   attributeValueMedia AttributeValueMedia[]
@@ -177,6 +195,7 @@ model Media {
   deletedAt           DateTime?
 
   @@index([mediaType])
+  @@index([uploadedById])
   @@index([deletedAt])
   @@map("media")
 }
@@ -193,6 +212,8 @@ model Category {
   parentId          String?           @db.Uuid
   parent            Category?         @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
   children          Category[]        @relation("CategoryHierarchy")
+  imageMediaId      String?           @db.Uuid
+  imageMedia        Media?            @relation(fields: [imageMediaId], references: [id], onDelete: SetNull)
   status            CategoryStatus    @default(ACTIVE)
   sortOrder         Int               @default(0)
   productCategories ProductCategory[]
@@ -231,6 +252,7 @@ model Attribute {
   id          String           @id @default(uuid()) @db.Uuid
   name        String           @unique
   slug        String           @unique
+  type        AttributeType    @default(DROPDOWN)
   description String?
   values      AttributeValue[]
   createdAt   DateTime         @default(now())
@@ -249,6 +271,8 @@ model AttributeValue {
   attribute              Attribute               @relation(fields: [attributeId], references: [id], onDelete: Cascade)
   value                  String
   displayColor           String?
+  imageMediaId           String?                 @db.Uuid
+  imageMedia             Media?                  @relation(fields: [imageMediaId], references: [id], onDelete: SetNull)
   variantAttributeValues VariantAttributeValue[]
   attributeValueMedia    AttributeValueMedia[]
   createdAt              DateTime                @default(now())

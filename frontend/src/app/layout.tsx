@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import QueryProvider from '@/components/providers/QueryProvider';
 import { AuthProvider } from '@/components/providers/AuthProvider';
+import { ToastContainer } from '@/components/ui/ToastContainer';
 
 import './globals.css';
 
@@ -15,7 +16,10 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
     <html lang="en">
       <body className="bg-slate-50 text-slate-800 antialiased selection:bg-emerald-600 selection:text-white">
         <QueryProvider>
-          <AuthProvider>{children}</AuthProvider>
+          <AuthProvider>
+            <ToastContainer />
+            {children}
+          </AuthProvider>
         </QueryProvider>
       </body>
     </html>

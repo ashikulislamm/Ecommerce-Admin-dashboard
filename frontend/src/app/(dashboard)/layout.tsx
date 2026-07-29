@@ -10,6 +10,9 @@ import {
   Users,
   Package,
   FolderTree,
+  Image as ImageIcon,
+  Award,
+  Sliders,
   Settings,
   LogOut,
   Menu,
@@ -27,11 +30,13 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { label: 'Overview', href: '/dashboard', icon: LayoutDashboard },
-  { label: 'Permissions', href: '/permissions', icon: Shield },
-  { label: 'Roles', href: '/roles', icon: ShieldCheck },
-  { label: 'User Management', href: '/users', icon: Users },
-  { label: 'Products', href: '/products', icon: Package },
+  { label: 'Media Library', href: '/media', icon: ImageIcon },
   { label: 'Categories', href: '/categories', icon: FolderTree },
+  { label: 'Brands', href: '/brands', icon: Award },
+  { label: 'Attributes', href: '/attributes', icon: Sliders },
+  { label: 'User Management', href: '/users', icon: Users },
+  { label: 'Roles', href: '/roles', icon: ShieldCheck },
+  { label: 'Permissions', href: '/permissions', icon: Shield },
   { label: 'Settings', href: '/settings', icon: Settings },
 ];
 

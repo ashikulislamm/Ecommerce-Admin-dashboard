@@ -1,4 +1,5 @@
 import express, { type Request, type Response } from 'express';
+import path from 'path';
 import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
@@ -63,6 +64,9 @@ app.use(express.urlencoded({ extended: true, limit: JSON_BODY_LIMIT }));
 
 // 7. Cookie parser — required for HttpOnly refresh token reading
 app.use(cookieParser(config.cookieSecret));
+
+// Serve uploaded physical files statically
+app.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));
 
 // 8. Global rate limiter — applied before routes to protect all endpoints
 app.use('/api/v1', globalRateLimiter);

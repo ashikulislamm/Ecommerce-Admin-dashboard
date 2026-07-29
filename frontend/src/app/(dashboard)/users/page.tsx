@@ -12,13 +12,13 @@ import { useRoles } from '@/features/roles/hooks/useRoles';
 import { UserTable } from '@/features/users/components/UserTable';
 import { CreateUserModal } from '@/features/users/components/CreateUserModal';
 import { UserRoleModal } from '@/features/users/components/UserRoleModal';
+import { ConfirmDeleteModal } from '@/components/ui/ConfirmDeleteModal';
 import type { User, UserStatus } from '@/features/users/types/user.types';
+import { toast } from '@/lib/toast';
 import {
   Users,
   Search,
   Plus,
-  AlertCircle,
-  CheckCircle2,
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
@@ -31,7 +31,7 @@ export default function UsersPage() {
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editingRoleUser, setEditingRoleUser] = useState<User | null>(null);
-  const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [deletingUser, setDeletingUser] = useState<User | null>(null);
 
   // TanStack Queries
   const { data: usersResponse, isLoading: isLoadingUsers } = useUsers({
@@ -57,62 +57,54 @@ export default function UsersPage() {
   const handleCreateSubmit = async (payload: any) => {
     try {
       await createMutation.mutateAsync(payload);
-      setFeedback({ type: 'success', message: 'User created successfully!' });
+      toast.success(`User "${payload.email}" created successfully!`);
+      setIsCreateModalOpen(false);
     } catch (err: any) {
-      setFeedback({ type: 'error', message: err.message || 'Failed to create user' });
+      toast.error(err.message || 'Failed to create user');
       throw err;
     }
   };
 
   const handleRoleSubmit = async (userId: string, roleId: string) => {
-    setFeedback(null);
     try {
       await updateRoleMutation.mutateAsync({ id: userId, roleId });
-      setFeedback({ type: 'success', message: 'User role updated successfully!' });
+      toast.success('User role updated successfully!');
+      setEditingRoleUser(null);
     } catch (err: any) {
-      setFeedback({ type: 'error', message: err.message || 'Failed to update user role' });
+      toast.error(err.message || 'Failed to update user role');
       throw err;
     }
   };
 
   const handleStatusChange = async (user: User, newStatus: UserStatus) => {
-    const actionLabel = newStatus === 'INACTIVE' ? 'deactivate' : 'activate';
-    if (!window.confirm(`Are you sure you want to ${actionLabel} user "${user.email}"?`)) {
-      return;
-    }
-
-    setFeedback(null);
     try {
       await updateStatusMutation.mutateAsync({ id: user.id, status: newStatus });
-      setFeedback({
-        type: 'success',
-        message: `User status changed to ${newStatus}. ${
-          newStatus === 'INACTIVE' ? 'All active refresh sessions were revoked immediately.' : ''
+      toast.success(
+        `User status changed to ${newStatus}. ${
+          newStatus === 'INACTIVE' ? 'All active refresh sessions revoked.' : ''
         }`,
-      });
+      );
     } catch (err: any) {
-      setFeedback({ type: 'error', message: err.message || 'Failed to update user status' });
+      toast.error(err.message || 'Failed to update user status');
     }
   };
 
-  const handleDelete = async (user: User) => {
-    if (!window.confirm(`Are you sure you want to delete user "${user.email}"?`)) {
-      return;
-    }
-
-    setFeedback(null);
+  const handleDeleteConfirm = async () => {
+    if (!deletingUser) return;
     try {
-      await deleteMutation.mutateAsync(user.id);
-      setFeedback({ type: 'success', message: `User "${user.email}" deleted successfully.` });
+      await deleteMutation.mutateAsync(deletingUser.id);
+      toast.success(`User "${deletingUser.email}" deleted successfully.`);
+      setDeletingUser(null);
     } catch (err: any) {
-      setFeedback({ type: 'error', message: err.message || 'Failed to delete user.' });
+      toast.error(err.message || 'Failed to delete user.');
+      setDeletingUser(null);
     }
   };
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-2xl bg-white border border-slate-200/90 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-2xl bg-white border border-slate-200/90 shadow-xs">
         <div className="flex items-center gap-3.5">
           <div className="p-3 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200">
             <Users className="w-6 h-6" />
@@ -129,37 +121,11 @@ export default function UsersPage() {
 
         <button
           onClick={() => setIsCreateModalOpen(true)}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-sm transition-all"
+          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs transition-all"
         >
           <Plus className="w-4 h-4" /> Create User
         </button>
       </div>
-
-      {/* Alert Notifications */}
-      {feedback && (
-        <div
-          className={`p-4 rounded-xl text-xs flex items-center justify-between border font-medium ${
-            feedback.type === 'success'
-              ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
-              : 'bg-rose-50 border-rose-200 text-rose-900'
-          }`}
-        >
-          <div className="flex items-center gap-2.5">
-            {feedback.type === 'success' ? (
-              <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
-            ) : (
-              <AlertCircle className="w-4 h-4 text-rose-700 shrink-0" />
-            )}
-            <span>{feedback.message}</span>
-          </div>
-          <button
-            onClick={() => setFeedback(null)}
-            className="text-slate-400 hover:text-slate-700 text-xs font-bold ml-4"
-          >
-            Dismiss
-          </button>
-        </div>
-      )}
 
       {/* Control Bar & Filters */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200/90 shadow-xs">
@@ -220,7 +186,7 @@ export default function UsersPage() {
         isLoading={isLoadingUsers}
         onChangeRole={(user) => setEditingRoleUser(user)}
         onChangeStatus={handleStatusChange}
-        onDelete={handleDelete}
+        onDelete={(user) => setDeletingUser(user)}
       />
 
       {/* Pagination Controls */}
@@ -266,6 +232,17 @@ export default function UsersPage() {
         onClose={() => setEditingRoleUser(null)}
         onSubmit={handleRoleSubmit}
         isSubmitting={updateRoleMutation.isPending}
+      />
+
+      {/* Confirm Delete Modal */}
+      <ConfirmDeleteModal
+        isOpen={!!deletingUser}
+        title="Delete User Account"
+        description="Are you sure you want to permanently delete this user account?"
+        itemName={deletingUser?.email}
+        isPending={deleteMutation.isPending}
+        onClose={() => setDeletingUser(null)}
+        onConfirm={handleDeleteConfirm}
       />
     </div>
   );
