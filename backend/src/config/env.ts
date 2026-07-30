@@ -2,7 +2,16 @@ import 'dotenv/config';
 import { z } from 'zod';
 
 const envSchema = z.object({
-  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+  NODE_ENV: z.preprocess((val) => {
+    if (typeof val === 'string') {
+      const cleaned = val.trim().toLowerCase().replace(/^["']|["']$/g, '');
+      if (cleaned === 'prod' || cleaned === 'production') return 'production';
+      if (cleaned === 'dev' || cleaned === 'development') return 'development';
+      if (cleaned === 'test') return 'test';
+      return cleaned;
+    }
+    return val;
+  }, z.enum(['development', 'production', 'test']).default('development')),
 
   PORT: z.coerce.number().default(8080),
 
