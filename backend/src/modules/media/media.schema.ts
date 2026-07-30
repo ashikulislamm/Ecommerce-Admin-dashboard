@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { MediaType } from '../../generated/prisma/index.js';
+import { MediaType } from '@prisma/client';
 
 export const updateMediaSchema = z.object({
   body: z.object({

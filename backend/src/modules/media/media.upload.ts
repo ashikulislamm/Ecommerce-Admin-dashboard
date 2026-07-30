@@ -4,7 +4,7 @@ import fs from 'fs';
 import sharp from 'sharp';
 import crypto from 'crypto';
 import { AppError } from '../../shared/errors/app-error.js';
-import { MediaType } from '../../generated/prisma/index.js';
+import { MediaType } from '@prisma/client';
 import type { ProcessedMediaFile } from './media.types.js';
 
 export const UPLOAD_DIR = path.join(process.cwd(), 'public', 'uploads');

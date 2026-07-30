@@ -1,6 +1,6 @@
 import prisma from '../../lib/prisma.js';
 import type { UserQuery, CreateUserInput, UpdateUserInput } from './user.types.js';
-import type { UserStatus } from '../../generated/prisma/index.js';
+import type { UserStatus } from '@prisma/client';
 
 export const USER_SELECT_FIELDS = {
   id: true,

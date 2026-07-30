@@ -1,4 +1,4 @@
-import type { CategoryStatus } from '../../generated/prisma/index.js';
+import type { CategoryStatus } from '@prisma/client';
 
 export interface CategoryQuery {
   page?: number;

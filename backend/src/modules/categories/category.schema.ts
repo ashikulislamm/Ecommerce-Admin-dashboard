@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { CategoryStatus } from '../../generated/prisma/index.js';
+import { CategoryStatus } from '@prisma/client';
 
 export const createCategorySchema = z.object({
   body: z.object({

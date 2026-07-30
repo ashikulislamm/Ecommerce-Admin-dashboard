@@ -1,4 +1,4 @@
-import type { UserStatus } from '../../generated/prisma/index.js';
+import type { UserStatus } from '@prisma/client';
 
 export interface CreateUserInput {
   firstName?: string;

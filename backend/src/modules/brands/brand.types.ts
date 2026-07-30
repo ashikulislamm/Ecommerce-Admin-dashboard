@@ -1,4 +1,4 @@
-import type { BrandStatus } from '../../generated/prisma/index.js';
+import type { BrandStatus } from '@prisma/client';
 
 export interface BrandQuery {
   page?: number;

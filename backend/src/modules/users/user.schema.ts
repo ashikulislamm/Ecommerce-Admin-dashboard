@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { UserStatus } from '../../generated/prisma/index.js';
+import { UserStatus } from '@prisma/client';
 
 export const createUserSchema = z.object({
   body: z.object({

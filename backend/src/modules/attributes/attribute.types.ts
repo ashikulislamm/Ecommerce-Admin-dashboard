@@ -1,4 +1,4 @@
-import type { AttributeType } from '../../generated/prisma/index.js';
+import type { AttributeType } from '@prisma/client';
 
 export interface AttributeQuery {
   page?: number;

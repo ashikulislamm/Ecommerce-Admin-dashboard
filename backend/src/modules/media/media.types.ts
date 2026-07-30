@@ -1,4 +1,4 @@
-import type { MediaType } from '../../generated/prisma/index.js';
+import type { MediaType } from '@prisma/client';
 
 export interface MediaQuery {
   page?: number;

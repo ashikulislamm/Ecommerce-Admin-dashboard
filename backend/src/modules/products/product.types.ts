@@ -1,4 +1,4 @@
-import type { ProductType, ProductStatus, VariantStatus } from '../../generated/prisma';
+import type { ProductType, ProductStatus, VariantStatus } from '@prisma/client';
 
 export interface CreateSimpleProductInput {
   name: string;

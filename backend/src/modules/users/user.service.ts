@@ -4,7 +4,7 @@ import UserRepository from './user.repository.js';
 import RoleRepository from '../roles/role.repository.js';
 import AuthorizationService from '../auth/authorization.service.js';
 import type { CreateUserInput, UpdateUserInput, UserQuery } from './user.types.js';
-import type { UserStatus } from '../../generated/prisma/index.js';
+import type { UserStatus } from '@prisma/client';
 
 const BCRYPT_SALT_ROUNDS = 10;
 

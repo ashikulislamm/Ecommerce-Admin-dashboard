@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { AttributeType } from '../../generated/prisma/index.js';
+import { AttributeType } from '@prisma/client';
 
 export const createAttributeSchema = z.object({
   body: z.object({

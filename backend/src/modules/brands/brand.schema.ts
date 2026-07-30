@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { BrandStatus } from '../../generated/prisma/index.js';
+import { BrandStatus } from '@prisma/client';
 
 export const createBrandSchema = z.object({
   body: z.object({
