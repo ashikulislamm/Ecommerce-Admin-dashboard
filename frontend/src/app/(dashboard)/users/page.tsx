@@ -12,18 +12,12 @@ import { useRoles } from '@/features/roles/hooks/useRoles';
 import { UserTable } from '@/features/users/components/UserTable';
 import { CreateUserModal } from '@/features/users/components/CreateUserModal';
 import { UserRoleModal } from '@/features/users/components/UserRoleModal';
-import { ConfirmDeleteModal } from '@/components/ui/ConfirmDeleteModal';
+import { ConfirmDeleteModal, PageHeader, SearchInput, Card, Pagination, Button } from '@/components/ui';
 import { PermissionGate, PermissionDeniedBanner } from '@/components/auth/PermissionGate';
 import { useAuth } from '@/components/providers/AuthProvider';
-import type { User, UserStatus } from '@/features/users/types/user.types';
+import type { User, UserStatus, CreateUserPayload } from '@/features/users/types/user.types';
 import { toast } from '@/lib/toast';
-import {
-  Users,
-  Search,
-  Plus,
-  ChevronLeft,
-  ChevronRight,
-} from 'lucide-react';
+import { Users, Plus } from 'lucide-react';
 
 export default function UsersPage() {
   const { hasPermission } = useAuth();
@@ -59,13 +53,14 @@ export default function UsersPage() {
   const updateStatusMutation = useUpdateUserStatus();
   const deleteMutation = useDeleteUser();
 
-  const handleCreateSubmit = async (payload: any) => {
+  const handleCreateSubmit = async (payload: CreateUserPayload) => {
     try {
       await createMutation.mutateAsync(payload);
       toast.success(`User "${payload.email}" created successfully!`);
       setIsCreateModalOpen(false);
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to create user');
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : 'Failed to create user';
+      toast.error(errorMsg);
       throw err;
     }
   };
@@ -75,8 +70,9 @@ export default function UsersPage() {
       await updateRoleMutation.mutateAsync({ id: userId, roleId });
       toast.success('User role updated successfully!');
       setEditingRoleUser(null);
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to update user role');
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : 'Failed to update user role';
+      toast.error(errorMsg);
       throw err;
     }
   };
@@ -89,8 +85,9 @@ export default function UsersPage() {
           newStatus === 'INACTIVE' ? 'All active refresh sessions revoked.' : ''
         }`,
       );
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to update user status');
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : 'Failed to update user status';
+      toast.error(errorMsg);
     }
   };
 
@@ -100,8 +97,9 @@ export default function UsersPage() {
       await deleteMutation.mutateAsync(deletingUser.id);
       toast.success(`User "${deletingUser.email}" deleted successfully.`);
       setDeletingUser(null);
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to delete user.');
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : 'Failed to delete user.';
+      toast.error(errorMsg);
       setDeletingUser(null);
     }
   };
@@ -113,47 +111,30 @@ export default function UsersPage() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-2xl bg-white border border-slate-200/90 shadow-xs">
-        <div className="flex items-center gap-3.5">
-          <div className="p-3 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200">
-            <Users className="w-6 h-6" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">
-              User Management
-            </h1>
-            <p className="text-xs text-slate-500 mt-0.5 font-medium">
-              Manage system accounts, role assignments, activation status, and active session revocation
-            </p>
-          </div>
-        </div>
-
-        <PermissionGate permission="users:create">
-          <button
-            onClick={() => setIsCreateModalOpen(true)}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs transition-all"
-          >
-            <Plus className="w-4 h-4" /> Create User
-          </button>
-        </PermissionGate>
-      </div>
+      <PageHeader
+        title="User Management"
+        description="Manage system accounts, role assignments, activation status, and active session revocation"
+        icon={Users}
+        action={
+          <PermissionGate permission="users:create">
+            <Button variant="emerald" onClick={() => setIsCreateModalOpen(true)}>
+              <Plus className="w-4 h-4" /> Create User
+            </Button>
+          </PermissionGate>
+        }
+      />
 
       {/* Control Bar & Filters */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200/90 shadow-xs">
+      <Card className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-3 flex-1">
-          <div className="relative flex-1 min-w-[200px]">
-            <Search className="absolute left-3.5 top-2.5 w-4 h-4 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search users by name, email..."
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
-              className="w-full pl-10 pr-4 py-2 text-xs rounded-xl bg-slate-50/50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:bg-white focus:border-emerald-600 focus:outline-none font-medium"
-            />
-          </div>
+          <SearchInput
+            value={search}
+            onSearchChange={(val) => {
+              setSearch(val);
+              setPage(1);
+            }}
+            placeholder="Search users by name, email..."
+          />
 
           <div className="relative min-w-[150px]">
             <select
@@ -162,7 +143,7 @@ export default function UsersPage() {
                 setSelectedRoleFilter(e.target.value);
                 setPage(1);
               }}
-              className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50/50 border border-slate-200 text-slate-800 focus:bg-white focus:border-emerald-600 focus:outline-none font-medium"
+              className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50/50 border border-slate-200 text-slate-800 focus:bg-white focus:border-emerald-600 focus:outline-hidden font-medium cursor-pointer"
             >
               <option value="">All Roles</option>
               {roles.map((r) => (
@@ -180,7 +161,7 @@ export default function UsersPage() {
                 setSelectedStatusFilter(e.target.value as UserStatus | '');
                 setPage(1);
               }}
-              className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50/50 border border-slate-200 text-slate-800 focus:bg-white focus:border-emerald-600 focus:outline-none font-medium"
+              className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50/50 border border-slate-200 text-slate-800 focus:bg-white focus:border-emerald-600 focus:outline-hidden font-medium cursor-pointer"
             >
               <option value="">All Statuses</option>
               <option value="ACTIVE">Active</option>
@@ -189,7 +170,7 @@ export default function UsersPage() {
             </select>
           </div>
         </div>
-      </div>
+      </Card>
 
       {/* Main Table */}
       <UserTable
@@ -201,30 +182,7 @@ export default function UsersPage() {
       />
 
       {/* Pagination Controls */}
-      {meta && meta.totalPages > 1 && (
-        <div className="flex items-center justify-between border-t border-slate-200 pt-4 text-xs text-slate-500 font-medium">
-          <div>
-            Showing page <span className="font-bold text-slate-900">{meta.page}</span> of{' '}
-            <span className="font-bold text-slate-900">{meta.totalPages}</span> ({meta.total} total users)
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              disabled={meta.page <= 1}
-              onClick={() => setPage((p) => Math.max(p - 1, 1))}
-              className="p-2 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 disabled:opacity-40 transition-colors shadow-xs"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <button
-              disabled={meta.page >= meta.totalPages}
-              onClick={() => setPage((p) => p + 1)}
-              className="p-2 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 disabled:opacity-40 transition-colors shadow-xs"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      )}
+      <Pagination meta={meta} onPageChange={setPage} itemName="users" />
 
       {/* Create User Modal */}
       <CreateUserModal

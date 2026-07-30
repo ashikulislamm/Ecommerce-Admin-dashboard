@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import type { Role } from '../types/role.types';
 import type { PermissionGroup, Permission } from '@/features/permissions/types/permission.types';
 import { ShieldCheck, Save, Sparkles, CheckSquare, Square, RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui';
 
 interface RolePermissionMatrixProps {
   selectedRole: Role | null;
@@ -22,17 +23,17 @@ export function RolePermissionMatrix({
 }: RolePermissionMatrixProps) {
   const [selectedPermissionIds, setSelectedPermissionIds] = useState<string[]>([]);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [prevRoleId, setPrevRoleId] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (selectedRole) {
-      const initialIds =
-        selectedRole.permissions?.map((p: Permission) => p.id) ||
-        selectedRole.rolePermissions?.map((rp) => rp.permissionId || rp.permission?.id) ||
-        [];
-      setSelectedPermissionIds(initialIds);
-      setHasUnsavedChanges(false);
-    }
-  }, [selectedRole]);
+  if (selectedRole && selectedRole.id !== prevRoleId) {
+    setPrevRoleId(selectedRole.id);
+    const initialIds =
+      selectedRole.permissions?.map((p: Permission) => p.id) ||
+      selectedRole.rolePermissions?.map((rp) => rp.permissionId || rp.permission?.id || '') ||
+      [];
+    setSelectedPermissionIds(initialIds.filter(Boolean));
+    setHasUnsavedChanges(false);
+  }
 
   if (!selectedRole) {
     return (
@@ -102,32 +103,29 @@ export function RolePermissionMatrix({
         </div>
 
         <div className="flex items-center gap-2.5">
-          <button
+          <Button
+            variant="lime"
             onClick={handleGrantAll}
             disabled={isSubmitting}
-            className="px-3.5 py-2 rounded-xl text-xs font-bold bg-lime-100 text-lime-900 border border-lime-200 hover:bg-lime-200 transition-all flex items-center gap-1.5 shadow-xs disabled:opacity-50"
           >
             <Sparkles className="w-4 h-4 text-lime-700" /> Grant All Permissions
-          </button>
+          </Button>
 
-          <button
+          <Button
+            variant={hasUnsavedChanges ? 'emerald' : 'outline'}
             onClick={handleSave}
             disabled={isSubmitting || !hasUnsavedChanges}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm ${
-              hasUnsavedChanges
-                ? 'bg-emerald-700 hover:bg-emerald-800 text-white animate-pulse'
-                : 'bg-slate-100 text-slate-400 border border-slate-200'
-            } disabled:opacity-50`}
+            className={hasUnsavedChanges ? 'animate-pulse' : ''}
           >
             <Save className="w-4 h-4" /> {isSubmitting ? 'Saving...' : 'Save Matrix'}
-          </button>
+          </Button>
         </div>
       </div>
 
       {hasUnsavedChanges && (
         <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold flex items-center gap-2">
           <RefreshCw className="w-4 h-4 text-amber-600 animate-spin" />
-          <span>Unsaved changes in matrix. Click "Save Matrix" to commit updates.</span>
+          <span>Unsaved changes in matrix. Click &quot;Save Matrix&quot; to commit updates.</span>
         </div>
       )}
 
@@ -149,7 +147,7 @@ export function RolePermissionMatrix({
                 <button
                   type="button"
                   onClick={() => handleToggleModuleAll(group)}
-                  className="text-xs font-bold text-emerald-800 hover:text-emerald-900 flex items-center gap-1.5"
+                  className="text-xs font-bold text-emerald-800 hover:text-emerald-900 flex items-center gap-1.5 cursor-pointer"
                 >
                   {isAllModuleSelected ? (
                     <>
@@ -182,7 +180,7 @@ export function RolePermissionMatrix({
                         type="checkbox"
                         checked={isChecked}
                         onChange={() => {}}
-                        className="w-4 h-4 accent-emerald-600 rounded border-slate-300"
+                        className="w-4 h-4 accent-emerald-600 rounded border-slate-300 cursor-pointer"
                       />
                     </label>
                   );

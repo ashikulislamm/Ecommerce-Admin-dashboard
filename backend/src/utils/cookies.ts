@@ -14,7 +14,7 @@ export const setRefreshTokenCookie = (res: Response, token: string): void => {
   res.cookie(REFRESH_TOKEN_COOKIE, token, {
     httpOnly: true,
     secure: config.isProduction,
-    sameSite: config.isProduction ? 'strict' : 'lax',
+    sameSite: config.isProduction ? 'none' : 'lax',
     maxAge: REFRESH_TOKEN_MAX_AGE_MS,
     path: '/',
   });
@@ -27,7 +27,7 @@ export const clearRefreshTokenCookie = (res: Response): void => {
   res.clearCookie(REFRESH_TOKEN_COOKIE, {
     httpOnly: true,
     secure: config.isProduction,
-    sameSite: config.isProduction ? 'strict' : 'lax',
+    sameSite: config.isProduction ? 'none' : 'lax',
     path: '/',
   });
 };

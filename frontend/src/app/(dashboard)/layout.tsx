@@ -21,6 +21,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { useAuth } from '@/components/providers/AuthProvider';
+import { Button } from '@/components/ui';
 
 interface NavItem {
   label: string;
@@ -91,12 +92,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
           <span className="font-extrabold text-slate-900 text-base">Apex ERP</span>
         </div>
-        <button
+        <Button
+          variant="ghost"
+          size="icon-sm"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="p-2 rounded-lg text-slate-600 hover:bg-slate-100"
         >
           {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-        </button>
+        </Button>
       </div>
 
       {/* Permission-Aware Sidebar */}
@@ -169,16 +171,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </p>
               </div>
             </div>
-            <button
+            <Button
+              variant="destructiveGhost"
+              size="icon-sm"
               onClick={() => {
                 logout();
                 router.push('/login');
               }}
-              className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
               title="Log Out"
             >
               <LogOut className="w-4 h-4" />
-            </button>
+            </Button>
           </div>
         </div>
       </aside>

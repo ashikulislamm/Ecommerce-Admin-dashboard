@@ -42,9 +42,11 @@ app.use(
       if (!origin) return callback(null, true);
       const allowedOrigins = config.corsOrigin === '*'
         ? ['*']
-        : config.corsOrigin.split(',').map((o) => o.trim());
+        : config.corsOrigin.split(',').map((o) => o.trim().replace(/\/+$/, ''));
 
-      if (allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
+      const cleanOrigin = origin.replace(/\/+$/, '');
+
+      if (allowedOrigins.includes('*') || allowedOrigins.includes(cleanOrigin)) {
         return callback(null, true);
       }
       return callback(null, false);

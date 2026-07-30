@@ -36,7 +36,7 @@ export const RoleService = {
   },
 
   async assignPermission(roleId: string, permissionId: string) {
-    return apiClient<any>(`/roles/${roleId}/permissions`, {
+    return apiClient<unknown>(`/roles/${roleId}/permissions`, {
       method: 'POST',
       body: JSON.stringify({ permissionId }),
     });

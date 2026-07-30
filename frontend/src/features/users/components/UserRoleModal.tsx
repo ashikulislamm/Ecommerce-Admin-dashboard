@@ -22,14 +22,14 @@ export function UserRoleModal({
   onSubmit,
   isSubmitting,
 }: UserRoleModalProps) {
-  const [selectedRoleId, setSelectedRoleId] = useState(user?.roleId || roles[0]?.id || '');
+  const [selectedRoleId, setSelectedRoleId] = useState('');
+  const [prevUserId, setPrevUserId] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  React.useEffect(() => {
-    if (user) {
-      setSelectedRoleId(user.roleId);
-    }
-  }, [user]);
+  if (user && user.id !== prevUserId) {
+    setPrevUserId(user.id);
+    setSelectedRoleId(user.roleId || roles[0]?.id || '');
+  }
 
   if (!isOpen || !user) return null;
 
@@ -40,8 +40,9 @@ export function UserRoleModal({
     try {
       await onSubmit(user.id, selectedRoleId);
       onClose();
-    } catch (err: any) {
-      setErrorMsg(err.message || 'Failed to update user role');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to update user role';
+      setErrorMsg(msg);
     }
   };
 
@@ -82,7 +83,7 @@ export function UserRoleModal({
             <select
               value={selectedRoleId}
               onChange={(e) => setSelectedRoleId(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 focus:bg-white focus:border-emerald-600 focus:outline-none font-medium"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 focus:bg-white focus:border-emerald-600 focus:outline-hidden font-medium"
             >
               {roles.map((r) => (
                 <option key={r.id} value={r.id}>
@@ -103,7 +104,7 @@ export function UserRoleModal({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-5 py-2.5 rounded-xl text-xs font-bold bg-emerald-700 hover:bg-emerald-800 text-white transition-all shadow-sm disabled:opacity-50"
+              className="px-5 py-2.5 rounded-xl text-xs font-bold bg-emerald-700 hover:bg-emerald-800 text-white transition-all shadow-xs disabled:opacity-50"
             >
               {isSubmitting ? 'Updating...' : 'Assign Role'}
             </button>

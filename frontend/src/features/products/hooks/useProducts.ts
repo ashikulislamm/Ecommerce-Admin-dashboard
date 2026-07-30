@@ -51,7 +51,7 @@ export function useGenerateVariantMatrix() {
 export function useUpdateProduct() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: any }) => productService.updateProduct(id, payload),
+    mutationFn: ({ id, payload }: { id: string; payload: Record<string, unknown> }) => productService.updateProduct(id, payload),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['product', variables.id] });

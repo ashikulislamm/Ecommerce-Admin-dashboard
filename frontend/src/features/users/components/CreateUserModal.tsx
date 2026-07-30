@@ -62,8 +62,9 @@ export function CreateUserModal({
       setEmail('');
       setPassword('');
       onClose();
-    } catch (err: any) {
-      setErrorMsg(err.message || 'Failed to create user');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to create user';
+      setErrorMsg(msg);
     }
   };
 

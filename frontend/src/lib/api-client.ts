@@ -1,7 +1,7 @@
-const getBaseUrl = () => {
+const getBaseUrl = (): string => {
   const envUrl = process.env.NEXT_PUBLIC_API_URL;
-  if (envUrl && !envUrl.includes('localhost:3000')) {
-    return envUrl;
+  if (envUrl) {
+    return envUrl.replace(/\/+$/, '');
   }
   return 'http://localhost:8080/api/v1';
 };

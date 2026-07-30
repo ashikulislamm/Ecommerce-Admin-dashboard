@@ -1,2 +1,2 @@
-export { QueryProvider } from "./query-provider";
-export { ThemeProvider } from "./theme-provider";
+export { default as QueryProvider } from './QueryProvider';
+export { AuthProvider, useAuth } from './AuthProvider';

@@ -16,6 +16,11 @@ const badgeVariants = cva(
         outline: "text-foreground [a]:hover:text-foreground/70",
         ghost: "text-muted-foreground hover:text-foreground",
         link: "text-foreground underline-offset-4 hover:underline",
+        active: "bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full text-[10px] font-bold border-0",
+        inactive: "bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full text-[10px] font-bold border-0",
+        draft: "bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full text-[10px] font-bold border-0",
+        suspended: "bg-rose-100 text-rose-800 px-2 py-0.5 rounded-full text-[10px] font-bold border-0",
+        archived: "bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full text-[10px] font-bold border-0",
       },
     },
     defaultVariants: {

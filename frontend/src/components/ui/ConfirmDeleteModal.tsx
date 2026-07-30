@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { AlertTriangle, X, Loader2 } from 'lucide-react';
+import { Button } from './button';
 
 interface ConfirmDeleteModalProps {
   isOpen: boolean;
@@ -31,9 +32,9 @@ export function ConfirmDeleteModal({
           <div className="w-10 h-10 rounded-xl bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-600">
             <AlertTriangle className="w-5 h-5" />
           </div>
-          <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100 transition-colors">
+          <Button variant="ghost" size="icon-sm" onClick={onClose} aria-label="Close dialog">
             <X className="w-5 h-5" />
-          </button>
+          </Button>
         </div>
 
         <div>
@@ -49,21 +50,13 @@ export function ConfirmDeleteModal({
         </div>
 
         <div className="flex justify-end gap-2 pt-2">
-          <button
-            onClick={onClose}
-            disabled={isPending}
-            className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors disabled:opacity-50"
-          >
+          <Button variant="ghost" onClick={onClose} disabled={isPending}>
             Cancel
-          </button>
-          <button
-            onClick={onConfirm}
-            disabled={isPending}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-600 text-white text-xs font-bold shadow-xs hover:bg-rose-700 disabled:opacity-50 transition-colors"
-          >
+          </Button>
+          <Button variant="destructive" onClick={onConfirm} disabled={isPending}>
             {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
             Confirm Delete
-          </button>
+          </Button>
         </div>
       </div>
     </div>

@@ -42,8 +42,9 @@ export function CreateRoleModal({
       setName('');
       setDescription('');
       onClose();
-    } catch (err: any) {
-      setErrorMsg(err.message || 'Failed to create role');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to create role';
+      setErrorMsg(msg);
     }
   };
 
