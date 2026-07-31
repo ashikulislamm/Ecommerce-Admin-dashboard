@@ -1,6 +1,6 @@
 export interface CreateMediaFolderInput {
   name: string;
-  parentId?: string;
+  parentId?: string | null;
 }
 
 export interface UpdateMediaFolderInput {

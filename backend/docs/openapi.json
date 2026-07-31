@@ -1,0 +1,301 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Ecommerce Admin Dashboard API",
+    "version": "1.0.0",
+    "description": "Production-ready Enterprise Ecommerce Admin Dashboard REST API built with Node.js, Express, TypeScript, PostgreSQL, Prisma, and JWT/RBAC security."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080/api/v1",
+      "description": "Local Development Server"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Provide access token in header: Authorization: Bearer <token>"
+      },
+      "cookieAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "refreshToken",
+        "description": "HttpOnly refresh token cookie sent automatically by browser or Postman"
+      }
+    },
+    "schemas": {
+      "ApiResponseSuccess": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean", "example": true },
+          "message": { "type": "string", "example": "Operation completed successfully" },
+          "data": { "type": "object" },
+          "meta": {
+            "type": "object",
+            "properties": {
+              "page": { "type": "integer", "example": 1 },
+              "limit": { "type": "integer", "example": 10 },
+              "total": { "type": "integer", "example": 100 },
+              "totalPages": { "type": "integer", "example": 10 }
+            }
+          }
+        }
+      },
+      "ApiResponseError": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean", "example": false },
+          "message": { "type": "string", "example": "Validation failed" },
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": { "type": "string", "example": "VALIDATION_ERROR" },
+              "details": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "field": { "type": "string", "example": "email" },
+                    "message": { "type": "string", "example": "Invalid email format" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "required": ["email", "password"],
+        "properties": {
+          "email": { "type": "string", "format": "email", "example": "admin@example.com" },
+          "password": { "type": "string", "example": "Admin123!" }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "email": { "type": "string", "format": "email" },
+          "firstName": { "type": "string", "nullable": true },
+          "lastName": { "type": "string", "nullable": true },
+          "roleId": { "type": "string", "format": "uuid" },
+          "status": { "type": "string", "enum": ["ACTIVE", "INACTIVE", "SUSPENDED"] },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Role": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string", "example": "SUPER_ADMIN" },
+          "description": { "type": "string", "nullable": true },
+          "isSystemRole": { "type": "boolean" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Permission": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "key": { "type": "string", "example": "products:read" },
+          "name": { "type": "string", "example": "Read Products" },
+          "module": { "type": "string", "example": "products" },
+          "action": { "type": "string", "example": "read" },
+          "description": { "type": "string", "nullable": true },
+          "isCustom": { "type": "boolean" },
+          "permissionGroupId": { "type": "string", "format": "uuid" }
+        }
+      },
+      "Product": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string" },
+          "slug": { "type": "string" },
+          "sku": { "type": "string" },
+          "description": { "type": "string", "nullable": true },
+          "brandId": { "type": "string", "format": "uuid", "nullable": true },
+          "productType": { "type": "string", "enum": ["SIMPLE", "VARIABLE"] },
+          "status": { "type": "string", "enum": ["DRAFT", "ACTIVE", "INACTIVE", "ARCHIVED"] },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health Check Endpoint",
+        "description": "Public health check endpoint inspecting database connectivity and system status.",
+        "responses": {
+          "200": { "description": "Service is healthy" },
+          "503": { "description": "Database connection failed" }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "summary": "User Login",
+        "description": "Authenticates user credentials, sets HttpOnly refresh token cookie, and returns access JWT.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/LoginRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Login successful, access token returned and cookie set" },
+          "400": { "description": "Validation error" },
+          "401": { "description": "Invalid credentials or inactive user" }
+        }
+      }
+    },
+    "/auth/refresh": {
+      "post": {
+        "summary": "Refresh Access Token",
+        "description": "Reads HttpOnly refreshToken cookie, rotates refresh token session, and issues a new access token.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": { "description": "Token refreshed successfully" },
+          "401": { "description": "Invalid or expired refresh token" }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "summary": "User Logout",
+        "description": "Revokes current refresh token session and clears HttpOnly refresh cookie.",
+        "responses": {
+          "200": { "description": "Logged out successfully" }
+        }
+      }
+    },
+    "/auth/session": {
+      "get": {
+        "summary": "Get Current Session",
+        "description": "Restores authenticated user context, role, and active permissions.",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Session restored" },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "summary": "List Users",
+        "security": [{ "bearerAuth": [] }],
+        "description": "Requires permission: users:read",
+        "parameters": [
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 10 } },
+          { "name": "search", "in": "query", "schema": { "type": "string" } },
+          { "name": "roleId", "in": "query", "schema": { "type": "string" } },
+          { "name": "status", "in": "query", "schema": { "type": "string", "enum": ["ACTIVE", "INACTIVE", "SUSPENDED"] } }
+        ],
+        "responses": {
+          "200": { "description": "List of users retrieved" },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden (Missing permission)" }
+        }
+      },
+      "post": {
+        "summary": "Create User",
+        "security": [{ "bearerAuth": [] }],
+        "description": "Requires permission: users:create",
+        "responses": {
+          "201": { "description": "User created" },
+          "400": { "description": "Validation error" },
+          "409": { "description": "Email already exists" }
+        }
+      }
+    },
+    "/roles": {
+      "get": {
+        "summary": "List Roles",
+        "security": [{ "bearerAuth": [] }],
+        "description": "Requires permission: roles:read",
+        "responses": {
+          "200": { "description": "List of roles retrieved" }
+        }
+      },
+      "post": {
+        "summary": "Create Role",
+        "security": [{ "bearerAuth": [] }],
+        "description": "Requires permission: roles:create",
+        "responses": {
+          "201": { "description": "Role created" }
+        }
+      }
+    },
+    "/permissions": {
+      "get": {
+        "summary": "List Permissions",
+        "security": [{ "bearerAuth": [] }],
+        "description": "Requires permission: permissions:read",
+        "responses": {
+          "200": { "description": "List of permissions" }
+        }
+      }
+    },
+    "/products": {
+      "get": {
+        "summary": "List Products",
+        "security": [{ "bearerAuth": [] }],
+        "description": "Requires permission: products:read",
+        "responses": {
+          "200": { "description": "Paginated list of products" }
+        }
+      }
+    },
+    "/products/simple": {
+      "post": {
+        "summary": "Create Simple Product",
+        "security": [{ "bearerAuth": [] }],
+        "description": "Requires permission: products:create",
+        "responses": {
+          "201": { "description": "Simple product created" }
+        }
+      }
+    },
+    "/products/variable": {
+      "post": {
+        "summary": "Create Variable Product",
+        "security": [{ "bearerAuth": [] }],
+        "description": "Requires permission: products:create",
+        "responses": {
+          "201": { "description": "Variable product created with variants" }
+        }
+      }
+    },
+    "/media/upload": {
+      "post": {
+        "summary": "Upload Single Media File",
+        "security": [{ "bearerAuth": [] }],
+        "description": "Requires permission: media:create",
+        "responses": {
+          "201": { "description": "File uploaded and metadata stored" }
+        }
+      }
+    },
+    "/categories/tree": {
+      "get": {
+        "summary": "Get Category Tree",
+        "security": [{ "bearerAuth": [] }],
+        "description": "Requires permission: categories:read",
+        "responses": {
+          "200": { "description": "Hierarchical tree of categories" }
+        }
+      }
+    }
+  }
+}
