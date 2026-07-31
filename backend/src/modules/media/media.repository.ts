@@ -8,7 +8,7 @@ export class MediaRepository {
     });
   }
 
-  static async createMedia(data: ProcessedMediaFile & { uploadedById?: string }) {
+  static async createMedia(data: ProcessedMediaFile & { uploadedById?: string; folderId?: string | null }) {
     return prisma.media.create({
       data: {
         originalName: data.originalName,
@@ -22,6 +22,7 @@ export class MediaRepository {
         height: data.height,
         mediaType: data.mediaType,
         uploadedById: data.uploadedById ?? null,
+        folderId: data.folderId ?? null,
       },
     });
   }
@@ -82,6 +83,12 @@ export class MediaRepository {
 
     if (params.uploadedById) {
       where.uploadedById = params.uploadedById;
+    }
+
+    if (params.folderId === 'root') {
+      where.folderId = null;
+    } else if (params.folderId && params.folderId !== 'all') {
+      where.folderId = params.folderId;
     }
 
     const [items, total] = await Promise.all([

@@ -126,8 +126,8 @@ export default function RolesPage() {
       {/* Grid Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column — Role List */}
-        <div className="lg:col-span-4 bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
-          <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+        <div className="lg:col-span-4 rounded-2xl overflow-hidden">
+          <div className="p-4 border-b border-slate-100 flex items-center justify-between">
             <h2 className="text-xs font-bold text-slate-800 uppercase tracking-wider">System Roles</h2>
             <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
               {roles.length} roles

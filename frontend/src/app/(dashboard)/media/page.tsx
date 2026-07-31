@@ -2,37 +2,92 @@
 
 import React, { useState } from 'react';
 import { useMedia, useDeleteMedia, useUpdateMedia } from '@/features/media/hooks/useMedia';
+import { useMediaFolders } from '@/features/media/hooks/useMediaFolders';
 import { MediaGrid } from '@/features/media/components/MediaGrid';
+import { FolderTreeSidebar } from '@/features/media/components/FolderTreeSidebar';
+import { CreateFolderModal } from '@/features/media/components/CreateFolderModal';
+import { MoveMediaModal } from '@/features/media/components/MoveMediaModal';
 import { UploadMediaModal } from '@/features/media/components/UploadMediaModal';
 import { ConfirmDeleteModal } from '@/components/ui/ConfirmDeleteModal';
 import { PermissionGate, PermissionDeniedBanner } from '@/components/auth/PermissionGate';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { toast } from '@/lib/toast';
-import { Upload, Search, Filter, RefreshCw, X, Loader2 } from 'lucide-react';
+import { Upload, Search, Filter, RefreshCw, X, Loader2, ArrowRightLeft, FolderPlus } from 'lucide-react';
 import type { MediaItem, MediaType } from '@/features/media/types/media.types';
+import type { MediaFolderTreeNode } from '@/features/media/types/media-folder.types';
 
 export default function MediaPage() {
   const { hasPermission } = useAuth();
   const [search, setSearch] = useState('');
   const [mediaType, setMediaType] = useState<MediaType | ''>('');
+  const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
+
   const [isUploadOpen, setIsUploadOpen] = useState(false);
+  const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
+  const [parentFolderIdForCreate, setParentFolderIdForCreate] = useState<string | null>(null);
+  const [isMoveMediaOpen, setIsMoveMediaOpen] = useState(false);
+  const [selectedMediaForMove, setSelectedMediaForMove] = useState<string[]>([]);
+
   const [editingItem, setEditingItem] = useState<MediaItem | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const [editAltText, setEditAltText] = useState('');
   const [deletingItem, setDeletingItem] = useState<MediaItem | null>(null);
+  const [deletingFolder, setDeletingFolder] = useState<MediaFolderTreeNode | null>(null);
 
   const canRead = hasPermission('media:read');
+
+  const {
+    folderTree,
+    createFolder,
+    isCreating: isCreatingFolder,
+    deleteFolder,
+    isDeleting: isDeletingFolder,
+    moveMedia,
+    isMoving: isMovingMedia,
+  } = useMediaFolders();
 
   const { data, isLoading, refetch } = useMedia({
     page,
     limit: 20,
     search: search || undefined,
     mediaType: (mediaType as MediaType) || undefined,
+    folderId: selectedFolderId || undefined,
   });
 
   const deleteMutation = useDeleteMedia();
   const updateMutation = useUpdateMedia();
+
+  const handleOpenCreateFolder = (parentId: string | null) => {
+    setParentFolderIdForCreate(parentId);
+    setIsCreateFolderOpen(true);
+  };
+
+  const handleCreateFolderSubmit = async (name: string, parentId: string | null) => {
+    await createFolder({ name, parentId });
+  };
+
+  const handleDeleteFolderConfirm = async () => {
+    if (!deletingFolder) return;
+    try {
+      await deleteFolder(deletingFolder.id);
+      if (selectedFolderId === deletingFolder.id) {
+        setSelectedFolderId(null);
+      }
+      setDeletingFolder(null);
+    } catch (err: any) {
+      setDeletingFolder(null);
+    }
+  };
+
+  const handleOpenMoveMedia = (mediaItem: MediaItem) => {
+    setSelectedMediaForMove([mediaItem.id]);
+    setIsMoveMediaOpen(true);
+  };
+
+  const handleMoveMediaSubmit = async (targetFolderId: string | null) => {
+    await moveMedia({ mediaIds: selectedMediaForMove, targetFolderId });
+  };
 
   const handleOpenEdit = (item: MediaItem) => {
     setEditingItem(item);
@@ -72,78 +127,132 @@ export default function MediaPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">Media Assets Library</h1>
-          <p className="text-xs text-slate-500 mt-1">Upload, organize, and manage physical media files and thumbnails.</p>
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">Media Assets & Folder System</h1>
+          <p className="text-xs text-slate-500 mt-1">Organize photos in nested directories (e.g. Gadgets → Smartwatch → Apple) and manage catalog assets.</p>
         </div>
 
-        <PermissionGate permission="media:create">
-          <button
-            onClick={() => setIsUploadOpen(true)}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold shadow-xs transition-all"
-          >
-            <Upload className="w-4 h-4" />
-            Upload New Assets
-          </button>
-        </PermissionGate>
-      </div>
-
-      {/* Search & Filter Toolbar */}
-      <div className="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-xs flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3 flex-1 min-w-[240px]">
-          <div className="relative flex-1">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder="Search assets by filename or title..."
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
-              className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-hidden focus:border-emerald-500 transition-colors"
-            />
-          </div>
-
-          <div className="relative">
-            <select
-              value={mediaType}
-              onChange={(e) => {
-                setMediaType(e.target.value as MediaType | '');
-                setPage(1);
-              }}
-              className="pl-3 pr-8 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 font-medium focus:outline-hidden focus:border-emerald-500 appearance-none"
+        <div className="flex items-center gap-2">
+          <PermissionGate permission="media:create">
+            <button
+              onClick={() => handleOpenCreateFolder(selectedFolderId)}
+              className="inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all border border-slate-200"
             >
-              <option value="">All Asset Types</option>
-              <option value="IMAGE">Images</option>
-              <option value="VIDEO">Videos</option>
-              <option value="DOCUMENT">Documents</option>
-            </select>
-            <Filter className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-          </div>
+              <FolderPlus className="w-4 h-4 text-amber-500" />
+              New Folder
+            </button>
+            <button
+              onClick={() => setIsUploadOpen(true)}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold shadow-xs transition-all"
+            >
+              <Upload className="w-4 h-4" />
+              Upload Assets
+            </button>
+          </PermissionGate>
         </div>
-
-        <button
-          onClick={() => refetch()}
-          className="p-2 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
-          title="Refresh List"
-        >
-          <RefreshCw className="w-4 h-4" />
-        </button>
       </div>
 
-      {/* Media Grid */}
-      <MediaGrid
-        mediaList={data || []}
-        isLoading={isLoading}
-        onEdit={handleOpenEdit}
-        onDelete={(item) => setDeletingItem(item)}
+      {/* Main Layout Grid with Folder Tree Sidebar */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left Column — Folder Tree Sidebar */}
+        <div className="lg:col-span-4 space-y-4">
+          <FolderTreeSidebar
+            tree={folderTree}
+            selectedFolderId={selectedFolderId}
+            onSelectFolder={(folderId) => {
+              setSelectedFolderId(folderId);
+              setPage(1);
+            }}
+            onCreateSubfolder={handleOpenCreateFolder}
+            onDeleteFolder={(folder) => setDeletingFolder(folder)}
+          />
+        </div>
+
+        {/* Right Column — Media Grid & Search Toolbar */}
+        <div className="lg:col-span-8 space-y-4">
+          {/* Search & Filter Toolbar */}
+          <div className="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-xs flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-3 flex-1 min-w-[240px]">
+              <div className="relative flex-1">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder="Search assets by filename or title..."
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setPage(1);
+                  }}
+                  className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-hidden focus:border-emerald-500 transition-colors"
+                />
+              </div>
+
+              <div className="relative">
+                <select
+                  value={mediaType}
+                  onChange={(e) => {
+                    setMediaType(e.target.value as MediaType | '');
+                    setPage(1);
+                  }}
+                  className="pl-3 pr-8 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 font-medium focus:outline-hidden focus:border-emerald-500 appearance-none"
+                >
+                  <option value="">All Asset Types</option>
+                  <option value="IMAGE">Images</option>
+                  <option value="VIDEO">Videos</option>
+                  <option value="DOCUMENT">Documents</option>
+                </select>
+                <Filter className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
+            </div>
+
+            <button
+              onClick={() => refetch()}
+              className="p-2 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
+              title="Refresh List"
+            >
+              <RefreshCw className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Media Grid */}
+          <MediaGrid
+            mediaList={data || []}
+            isLoading={isLoading}
+            onEdit={handleOpenEdit}
+            onDelete={(item) => setDeletingItem(item)}
+            onMove={handleOpenMoveMedia}
+          />
+        </div>
+      </div>
+
+      {/* Create Folder Modal */}
+      <CreateFolderModal
+        isOpen={isCreateFolderOpen}
+        onClose={() => setIsCreateFolderOpen(false)}
+        parentFolderId={parentFolderIdForCreate}
+        tree={folderTree}
+        onSubmit={handleCreateFolderSubmit}
+        isCreating={isCreatingFolder}
+      />
+
+      {/* Move Media Modal */}
+      <MoveMediaModal
+        isOpen={isMoveMediaOpen}
+        onClose={() => setIsMoveMediaOpen(false)}
+        selectedMediaIds={selectedMediaForMove}
+        tree={folderTree}
+        onSubmit={handleMoveMediaSubmit}
+        isMoving={isMovingMedia}
       />
 
       {/* Upload Modal */}
-      <UploadMediaModal isOpen={isUploadOpen} onClose={() => setIsUploadOpen(false)} />
+      <UploadMediaModal
+        isOpen={isUploadOpen}
+        onClose={() => setIsUploadOpen(false)}
+        folderId={selectedFolderId}
+      />
 
       {/* Edit Modal */}
       {editingItem && (
@@ -200,7 +309,18 @@ export default function MediaPage() {
         </div>
       )}
 
-      {/* Confirm Delete Modal */}
+      {/* Confirm Delete Folder Modal */}
+      <ConfirmDeleteModal
+        isOpen={!!deletingFolder}
+        title="Delete Folder?"
+        description="Are you sure you want to delete this folder? Folders containing subfolders or media files cannot be deleted."
+        itemName={deletingFolder?.name}
+        isPending={isDeletingFolder}
+        onClose={() => setDeletingFolder(null)}
+        onConfirm={handleDeleteFolderConfirm}
+      />
+
+      {/* Confirm Delete Asset Modal */}
       <ConfirmDeleteModal
         isOpen={!!deletingItem}
         title="Delete Asset Permanently?"

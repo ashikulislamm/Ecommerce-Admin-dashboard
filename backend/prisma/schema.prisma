@@ -183,6 +183,8 @@ model Media {
   metadata            Json?
   uploadedById        String?               @db.Uuid
   uploadedBy          User?                 @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+  folderId            String?               @db.Uuid
+  folder              MediaFolder?          @relation(fields: [folderId], references: [id], onDelete: SetNull)
   categories          Category[]
   brands              Brand[]
   attributeValues     AttributeValue[]
@@ -195,8 +197,28 @@ model Media {
 
   @@index([mediaType])
   @@index([uploadedById])
+  @@index([folderId])
   @@index([deletedAt])
   @@map("media")
+}
+
+model MediaFolder {
+  id        String        @id @default(uuid()) @db.Uuid
+  name      String
+  slug      String
+  parentId  String?       @db.Uuid
+  parent    MediaFolder?  @relation("MediaFolderHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
+  children  MediaFolder[] @relation("MediaFolderHierarchy")
+  media     Media[]
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  deletedAt DateTime?
+
+  @@unique([parentId, slug])
+  @@index([parentId])
+  @@index([slug])
+  @@index([deletedAt])
+  @@map("media_folders")
 }
 
 // ==========================================

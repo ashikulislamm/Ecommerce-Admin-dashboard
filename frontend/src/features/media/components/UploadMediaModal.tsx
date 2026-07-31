@@ -8,9 +8,10 @@ import { toast } from '@/lib/toast';
 interface UploadMediaModalProps {
   isOpen: boolean;
   onClose: () => void;
+  folderId?: string | null;
 }
 
-export function UploadMediaModal({ isOpen, onClose }: UploadMediaModalProps) {
+export function UploadMediaModal({ isOpen, onClose, folderId }: UploadMediaModalProps) {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const uploadMutation = useUploadMediaMultiple();
 
@@ -25,7 +26,7 @@ export function UploadMediaModal({ isOpen, onClose }: UploadMediaModalProps) {
   const handleUpload = async () => {
     if (selectedFiles.length === 0) return;
     try {
-      await uploadMutation.mutateAsync(selectedFiles);
+      await uploadMutation.mutateAsync({ files: selectedFiles, folderId });
       toast.success(`${selectedFiles.length} asset(s) uploaded successfully!`);
       setSelectedFiles([]);
       onClose();

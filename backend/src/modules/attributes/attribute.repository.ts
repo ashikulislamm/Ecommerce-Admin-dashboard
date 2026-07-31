@@ -148,9 +148,6 @@ export class AttributeRepository {
         attributeValue: {
           attributeId,
         },
-        variant: {
-          deletedAt: null,
-        },
       },
     });
   }
@@ -159,9 +156,6 @@ export class AttributeRepository {
     return prisma.variantAttributeValue.count({
       where: {
         attributeValueId: valueId,
-        variant: {
-          deletedAt: null,
-        },
       },
     });
   }

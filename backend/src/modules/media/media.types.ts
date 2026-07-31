@@ -6,11 +6,13 @@ export interface MediaQuery {
   search?: string;
   mediaType?: MediaType;
   uploadedById?: string;
+  folderId?: string;
 }
 
 export interface UpdateMediaInput {
   title?: string;
   altText?: string;
+  folderId?: string | null;
 }
 
 export interface ProcessedMediaFile {
@@ -24,4 +26,5 @@ export interface ProcessedMediaFile {
   width: number | null;
   height: number | null;
   mediaType: MediaType;
+  folderId?: string | null;
 }

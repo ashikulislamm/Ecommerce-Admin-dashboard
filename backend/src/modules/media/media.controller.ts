@@ -5,14 +5,16 @@ import { ApiResponse } from '../../shared/responses/api-response.js';
 export class MediaController {
   static async uploadSingle(req: Request, res: Response): Promise<void> {
     const userId = (req as any).user?.id;
-    const media = await MediaService.uploadSingle(req.file, userId);
+    const folderId = req.body?.folderId || null;
+    const media = await MediaService.uploadSingle(req.file, userId, folderId);
     ApiResponse.success(res, 201, 'File uploaded successfully', media);
   }
 
   static async uploadMultiple(req: Request, res: Response): Promise<void> {
     const userId = (req as any).user?.id;
+    const folderId = req.body?.folderId || null;
     const files = req.files as Express.Multer.File[];
-    const mediaList = await MediaService.uploadMultiple(files, userId);
+    const mediaList = await MediaService.uploadMultiple(files, userId, folderId);
     ApiResponse.success(res, 201, 'Files uploaded successfully', mediaList);
   }
 

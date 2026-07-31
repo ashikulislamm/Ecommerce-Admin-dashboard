@@ -6,6 +6,7 @@ import { useCreateSimpleProduct, useUpdateProduct } from '../hooks/useProducts';
 import { useBrands } from '@/features/brands/hooks/useBrands';
 import { useCategories } from '@/features/categories/hooks/useCategories';
 import { useMedia } from '@/features/media/hooks/useMedia';
+import { useMediaFolders } from '@/features/media/hooks/useMediaFolders';
 import type { ProductItem, ProductStatus } from '../types/product.types';
 import { toast } from '@/lib/toast';
 
@@ -36,10 +37,17 @@ export function CreateSimpleProductModal({
   const [status, setStatus] = useState<ProductStatus>('DRAFT');
   const [thumbnailMediaId, setThumbnailMediaId] = useState<string>('');
   const [galleryMediaIds, setGalleryMediaIds] = useState<string[]>([]);
+  const [selectedFolderId, setSelectedFolderId] = useState<string>('');
 
   const { data: brandsData } = useBrands({ page: 1, limit: 100 });
   const { data: categoriesData } = useCategories({ page: 1, limit: 100 });
-  const { data: mediaData } = useMedia({ page: 1, limit: 50, mediaType: 'IMAGE' });
+  const { folderTree: foldersTree } = useMediaFolders();
+  const { data: mediaData } = useMedia({
+    page: 1,
+    limit: 100,
+    mediaType: 'IMAGE',
+    folderId: selectedFolderId || undefined,
+  });
 
   const createMutation = useCreateSimpleProduct();
   const updateMutation = useUpdateProduct();
@@ -400,9 +408,28 @@ export function CreateSimpleProductModal({
 
           {/* Section 4: Media */}
           {activeSection === 'media' && (
-            <div className="p-3 rounded-xl border border-slate-200 space-y-2 bg-slate-50/50 animate-in fade-in">
-              <h3 className="font-bold text-slate-800 uppercase tracking-wider text-[11px]">Primary Thumbnail & Gallery Media</h3>
-              <p className="text-[11px] text-slate-500">Select images from your Media Asset Library:</p>
+            <div className="p-3 rounded-xl border border-slate-200 space-y-3 bg-slate-50/50 animate-in fade-in">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-bold text-slate-800 uppercase tracking-wider text-[11px]">Primary Thumbnail & Gallery Media</h3>
+                  <p className="text-[11px] text-slate-500">Select images from your Media Asset Library:</p>
+                </div>
+
+                {/* Folder Directory Selector */}
+                <select
+                  value={selectedFolderId}
+                  onChange={(e) => setSelectedFolderId(e.target.value)}
+                  className="px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white font-semibold text-slate-700 text-xs focus:outline-hidden focus:border-emerald-500"
+                >
+                  <option value="">All Media Directories</option>
+                  <option value="root">Root Directory</option>
+                  {foldersTree?.map((f) => (
+                    <option key={f.id} value={f.id}>
+                      📁 {f.name} ({f.mediaCount})
+                    </option>
+                  ))}
+                </select>
+              </div>
 
               <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 max-h-48 overflow-y-auto p-2 border border-slate-200 rounded-xl bg-white">
                 {mediaData?.map((m) => {

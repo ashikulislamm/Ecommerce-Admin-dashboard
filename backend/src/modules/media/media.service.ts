@@ -6,7 +6,7 @@ import { processAndSaveFile, UPLOAD_DIR, THUMB_DIR } from './media.upload.js';
 import type { MediaQuery, UpdateMediaInput } from './media.types.js';
 
 export class MediaService {
-  static async uploadSingle(file?: Express.Multer.File, uploadedById?: string) {
+  static async uploadSingle(file?: Express.Multer.File, uploadedById?: string, folderId?: string | null) {
     if (!file) {
       throw AppError.badRequest('No file uploaded.');
     }
@@ -15,10 +15,11 @@ export class MediaService {
     return MediaRepository.createMedia({
       ...processed,
       uploadedById,
+      folderId,
     });
   }
 
-  static async uploadMultiple(files?: Express.Multer.File[], uploadedById?: string) {
+  static async uploadMultiple(files?: Express.Multer.File[], uploadedById?: string, folderId?: string | null) {
     if (!files || files.length === 0) {
       throw AppError.badRequest('No files uploaded.');
     }
@@ -29,6 +30,7 @@ export class MediaService {
       const saved = await MediaRepository.createMedia({
         ...processed,
         uploadedById,
+        folderId,
       });
       results.push(saved);
     }

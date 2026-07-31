@@ -2,13 +2,14 @@
 
 import React from 'react';
 import type { MediaItem } from '../types/media.types';
-import { Image as ImageIcon, FileText, Video, Trash2, Edit2, ExternalLink } from 'lucide-react';
+import { Image as ImageIcon, FileText, Video, Trash2, Edit2, ExternalLink, ArrowRightLeft } from 'lucide-react';
 
 interface MediaGridProps {
   mediaList: MediaItem[];
   isLoading: boolean;
   onEdit: (item: MediaItem) => void;
   onDelete: (item: MediaItem) => void;
+  onMove?: (item: MediaItem) => void;
 }
 
 const getApiBaseUrl = () => {
@@ -19,11 +20,11 @@ const getApiBaseUrl = () => {
   return 'http://localhost:8080';
 };
 
-export function MediaGrid({ mediaList, isLoading, onEdit, onDelete }: MediaGridProps) {
+export function MediaGrid({ mediaList, isLoading, onEdit, onDelete, onMove }: MediaGridProps) {
   if (isLoading) {
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-        {[...Array(10)].map((_, i) => (
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+        {[...Array(8)].map((_, i) => (
           <div key={i} className="h-44 w-full animate-pulse rounded-2xl bg-white border border-slate-200" />
         ))}
       </div>
@@ -43,7 +44,7 @@ export function MediaGrid({ mediaList, isLoading, onEdit, onDelete }: MediaGridP
   const backendHost = getApiBaseUrl();
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
       {mediaList.map((item) => {
         const fullUrl = item.url?.startsWith('http') ? item.url : `${backendHost}${item.url}`;
         const thumbUrl = item.thumbnailUrl
@@ -78,29 +79,38 @@ export function MediaGrid({ mediaList, isLoading, onEdit, onDelete }: MediaGridP
               )}
 
               {/* Hover Actions */}
-              <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+              <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5 p-2">
                 <a
                   href={fullUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="p-2 rounded-xl bg-white/90 text-slate-800 hover:text-emerald-700 transition-colors shadow-xs"
+                  className="p-1.5 rounded-xl bg-white/90 text-slate-800 hover:text-emerald-700 transition-colors shadow-xs"
                   title="View Full Asset"
                 >
-                  <ExternalLink className="w-4 h-4" />
+                  <ExternalLink className="w-3.5 h-3.5" />
                 </a>
+                {onMove && (
+                  <button
+                    onClick={() => onMove(item)}
+                    className="p-1.5 rounded-xl bg-white/90 text-slate-800 hover:text-sky-700 transition-colors shadow-xs"
+                    title="Move to Folder"
+                  >
+                    <ArrowRightLeft className="w-3.5 h-3.5" />
+                  </button>
+                )}
                 <button
                   onClick={() => onEdit(item)}
-                  className="p-2 rounded-xl bg-white/90 text-slate-800 hover:text-emerald-700 transition-colors shadow-xs"
+                  className="p-1.5 rounded-xl bg-white/90 text-slate-800 hover:text-emerald-700 transition-colors shadow-xs"
                   title="Edit Metadata"
                 >
-                  <Edit2 className="w-4 h-4" />
+                  <Edit2 className="w-3.5 h-3.5" />
                 </button>
                 <button
                   onClick={() => onDelete(item)}
-                  className="p-2 rounded-xl bg-white/90 text-rose-600 hover:bg-rose-50 transition-colors shadow-xs"
+                  className="p-1.5 rounded-xl bg-white/90 text-rose-600 hover:bg-rose-50 transition-colors shadow-xs"
                   title="Delete Asset"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
