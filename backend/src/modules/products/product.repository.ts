@@ -30,7 +30,6 @@ export class ProductRepository {
         orderBy: { displayOrder: 'asc' as const },
       },
       variants: {
-        where: { deletedAt: null },
         include: {
           variantAttributeValues: {
             include: {
@@ -56,7 +55,7 @@ export class ProductRepository {
 
   static async findById(id: string) {
     return prisma.product.findFirst({
-      where: { id, deletedAt: null },
+      where: { id },
       include: this.includeFull(),
     });
   }
@@ -65,7 +64,6 @@ export class ProductRepository {
     return prisma.product.findFirst({
       where: {
         slug: { equals: slug, mode: 'insensitive' },
-        deletedAt: null,
         ...(excludeId ? { id: { not: excludeId } } : {}),
       },
     });
@@ -76,7 +74,6 @@ export class ProductRepository {
     const existingProduct = await prisma.product.findFirst({
       where: {
         sku: { equals: sku, mode: 'insensitive' },
-        deletedAt: null,
         ...(excludeProductId ? { id: { not: excludeProductId } } : {}),
       },
     });
@@ -86,7 +83,6 @@ export class ProductRepository {
     const existingVariant = await prisma.productVariant.findFirst({
       where: {
         sku: { equals: sku, mode: 'insensitive' },
-        deletedAt: null,
         ...(excludeProductId ? { productId: { not: excludeProductId } } : {}),
       },
     });
@@ -353,7 +349,7 @@ export class ProductRepository {
       const existingProduct = await tx.product.findUnique({ where: { id } });
       if (existingProduct?.productType === 'SIMPLE') {
         const defaultVariant = await tx.productVariant.findFirst({
-          where: { productId: id, deletedAt: null },
+          where: { productId: id },
         });
 
         if (defaultVariant) {
@@ -385,7 +381,6 @@ export class ProductRepository {
     const skip = (page - 1) * limit;
 
     const where: Prisma.ProductWhereInput = {
-      deletedAt: null,
       ...(query.productType ? { productType: query.productType } : {}),
       ...(query.status ? { status: query.status } : {}),
       ...(query.brandId ? { brandId: query.brandId } : {}),
@@ -411,7 +406,6 @@ export class ProductRepository {
     if (query.minPrice !== undefined || query.maxPrice !== undefined) {
       where.variants = {
         some: {
-          deletedAt: null,
           ...(query.minPrice !== undefined ? { price: { gte: query.minPrice } } : {}),
           ...(query.maxPrice !== undefined ? { price: { lte: query.maxPrice } } : {}),
         },
@@ -443,16 +437,22 @@ export class ProductRepository {
     };
   }
 
-  static async softDelete(id: string) {
+  static async deleteProduct(id: string) {
     return prisma.$transaction(async (tx) => {
-      const now = new Date();
-      await tx.productVariant.updateMany({
-        where: { productId: id },
-        data: { deletedAt: now },
-      });
-      return tx.product.update({
+      await tx.productMedia.deleteMany({ where: { productId: id } });
+      await tx.productCategory.deleteMany({ where: { productId: id } });
+
+      const variants = await tx.productVariant.findMany({ where: { productId: id }, select: { id: true } });
+      const variantIds = variants.map((v) => v.id);
+
+      if (variantIds.length > 0) {
+        await tx.variantMedia.deleteMany({ where: { variantId: { in: variantIds } } });
+        await tx.variantAttributeValue.deleteMany({ where: { variantId: { in: variantIds } } });
+        await tx.productVariant.deleteMany({ where: { productId: id } });
+      }
+
+      return tx.product.delete({
         where: { id },
-        data: { deletedAt: now },
       });
     });
   }

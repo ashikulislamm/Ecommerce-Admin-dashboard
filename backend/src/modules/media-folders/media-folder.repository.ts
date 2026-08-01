@@ -10,8 +10,8 @@ export class MediaFolderRepository {
         children: true,
         _count: {
           select: {
-            media: { where: { deletedAt: null } },
-            children: { where: { deletedAt: null } },
+            media: true,
+            children: true,
           },
         },
       },
@@ -23,7 +23,6 @@ export class MediaFolderRepository {
       where: {
         parentId: parentId || null,
         slug,
-        deletedAt: null,
       },
     });
   }
@@ -53,12 +52,11 @@ export class MediaFolderRepository {
 
   static async findAllFlat() {
     return prisma.mediaFolder.findMany({
-      where: { deletedAt: null },
       orderBy: { name: 'asc' },
       include: {
         _count: {
           select: {
-            media: { where: { deletedAt: null } },
+            media: true,
           },
         },
       },

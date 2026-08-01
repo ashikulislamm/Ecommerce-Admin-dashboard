@@ -8,7 +8,8 @@ import { ConfirmDeleteModal } from '@/components/ui/ConfirmDeleteModal';
 import { PermissionGate, PermissionDeniedBanner } from '@/components/auth/PermissionGate';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { toast } from '@/lib/toast';
-import { Plus, RefreshCw, GitBranch, List } from 'lucide-react';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { Plus, RefreshCw, GitBranch, List, FolderTree } from 'lucide-react';
 import type { CategoryItem } from '@/features/categories/types/category.types';
 
 export default function CategoriesPage() {
@@ -62,23 +63,23 @@ export default function CategoriesPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">Category Hierarchy & Management</h1>
-          <p className="text-xs text-slate-500 mt-1">Organize products into unlimited nested categories and parent trees.</p>
-        </div>
-
-        <PermissionGate permission="categories:create">
-          <button
-            onClick={handleOpenAddRoot}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold shadow-xs transition-all"
-          >
-            <Plus className="w-4 h-4" />
-            Create Root Category
-          </button>
-        </PermissionGate>
-      </div>
+      {/* Unified Page Header */}
+      <PageHeader
+        title="Category Hierarchy & Management"
+        description="Organize products into unlimited nested categories and parent trees."
+        icon={FolderTree}
+        action={
+          <PermissionGate permission="categories:create">
+            <button
+              onClick={handleOpenAddRoot}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold shadow-xs transition-all"
+            >
+              <Plus className="w-4 h-4" />
+              Create Root Category
+            </button>
+          </PermissionGate>
+        }
+      />
 
       {/* Toolbar */}
       <div className="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-xs flex items-center justify-between gap-3">

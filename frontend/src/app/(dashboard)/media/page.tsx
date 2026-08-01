@@ -12,7 +12,8 @@ import { ConfirmDeleteModal } from '@/components/ui/ConfirmDeleteModal';
 import { PermissionGate, PermissionDeniedBanner } from '@/components/auth/PermissionGate';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { toast } from '@/lib/toast';
-import { Upload, Search, Filter, RefreshCw, X, Loader2, ArrowRightLeft, FolderPlus } from 'lucide-react';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { Upload, Search, Filter, RefreshCw, X, Loader2, ArrowRightLeft, FolderPlus, Image as ImageIcon } from 'lucide-react';
 import type { MediaItem, MediaType } from '@/features/media/types/media.types';
 import type { MediaFolderTreeNode } from '@/features/media/types/media-folder.types';
 
@@ -127,32 +128,32 @@ export default function MediaPage() {
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">Media Assets & Folder System</h1>
-          <p className="text-xs text-slate-500 mt-1">Organize photos in nested directories (e.g. Gadgets → Smartwatch → Apple) and manage catalog assets.</p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <PermissionGate permission="media:create">
-            <button
-              onClick={() => handleOpenCreateFolder(selectedFolderId)}
-              className="inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all border border-slate-200"
-            >
-              <FolderPlus className="w-4 h-4 text-amber-500" />
-              New Folder
-            </button>
-            <button
-              onClick={() => setIsUploadOpen(true)}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold shadow-xs transition-all"
-            >
-              <Upload className="w-4 h-4" />
-              Upload Assets
-            </button>
-          </PermissionGate>
-        </div>
-      </div>
+      {/* Unified Page Header */}
+      <PageHeader
+        title="Media Assets & Folder System"
+        description="Organize photos in nested directories (e.g. Gadgets → Smartwatch → Apple) and manage catalog assets."
+        icon={ImageIcon}
+        action={
+          <div className="flex items-center gap-2">
+            <PermissionGate permission="media:create">
+              <button
+                onClick={() => handleOpenCreateFolder(selectedFolderId)}
+                className="inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all border border-slate-200"
+              >
+                <FolderPlus className="w-4 h-4 text-amber-500" />
+                New Folder
+              </button>
+              <button
+                onClick={() => setIsUploadOpen(true)}
+                className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold shadow-xs transition-all"
+              >
+                <Upload className="w-4 h-4" />
+                Upload Assets
+              </button>
+            </PermissionGate>
+          </div>
+        }
+      />
 
       {/* Main Layout Grid with Folder Tree Sidebar */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">

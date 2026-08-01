@@ -9,6 +9,7 @@ import { useMedia } from '@/features/media/hooks/useMedia';
 import { useMediaFolders } from '@/features/media/hooks/useMediaFolders';
 import type { ProductItem, ProductStatus } from '../types/product.types';
 import { toast } from '@/lib/toast';
+import { getMediaUrl } from '@/lib/utils';
 
 interface CreateSimpleProductModalProps {
   isOpen: boolean;
@@ -455,7 +456,7 @@ export function CreateSimpleProductModal({
                         }
                       }}
                     >
-                      <img src={m.thumbnailUrl || m.url} alt={m.originalName} className="w-full h-full object-cover" />
+                      <img src={getMediaUrl(m.thumbnailUrl || m.url)} alt={m.originalName} className="w-full h-full object-cover" />
                       {isThumb && (
                         <span className="absolute top-1 left-1 bg-emerald-600 text-white text-[8px] font-bold px-1 rounded-sm">
                           Thumb

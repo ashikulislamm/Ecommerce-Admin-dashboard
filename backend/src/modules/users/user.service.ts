@@ -156,7 +156,7 @@ export class UserService {
     // Revoke sessions immediately
     await UserRepository.revokeAllUserSessions(targetUserId);
 
-    return UserRepository.softDeleteUser(targetUserId);
+    return UserRepository.deleteUser(targetUserId);
   }
 }
 

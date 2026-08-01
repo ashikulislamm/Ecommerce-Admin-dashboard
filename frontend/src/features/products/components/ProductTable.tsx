@@ -4,6 +4,7 @@ import React from 'react';
 import type { ProductItem } from '../types/product.types';
 import { Package, Edit2, Trash2, ImageIcon } from 'lucide-react';
 import { Button, Badge, EmptyState, TableSkeleton, Card } from '@/components/ui';
+import { getMediaUrl } from '@/lib/utils';
 
 interface ProductTableProps {
   products: ProductItem[];
@@ -74,7 +75,7 @@ export function ProductTable({ products, isLoading, onEdit, onDelete }: ProductT
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-xl border border-slate-200 overflow-hidden bg-slate-100 shrink-0 flex items-center justify-center">
                         {thumbUrl ? (
-                          <img src={thumbUrl} alt={product.name} className="w-full h-full object-cover" />
+                          <img src={getMediaUrl(thumbUrl)} alt={product.name} className="w-full h-full object-cover" />
                         ) : (
                           <ImageIcon className="w-5 h-5 text-slate-400" />
                         )}

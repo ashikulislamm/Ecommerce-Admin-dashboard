@@ -84,18 +84,25 @@ export function RoleList({
                 </div>
               </div>
 
-              {!r.isSystemRole && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDeleteRole(r);
-                  }}
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-                  title="Delete Role"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              )}
+              <div className="shrink-0 flex items-center gap-1">
+                {r.name !== 'SUPER_ADMIN' ? (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDeleteRole(r);
+                    }}
+                    className="p-2 rounded-xl text-rose-600 hover:text-rose-800 bg-rose-50 hover:bg-rose-100 border border-rose-200/80 transition-all shadow-xs"
+                    title={`Delete role "${r.name}"`}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                ) : (
+                  <span className="text-[10px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200 font-bold" title="SUPER_ADMIN is a core system role and cannot be deleted">
+                    System Protected
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         );

@@ -76,8 +76,8 @@ export class RoleService {
   static async deleteRole(id: string) {
     const role = await this.getRoleById(id);
 
-    if (role.isSystemRole || role.name === 'SUPER_ADMIN') {
-      throw AppError.forbidden(`Protected system role "${role.name}" cannot be deleted.`);
+    if (role.name === 'SUPER_ADMIN') {
+      throw AppError.forbidden(`Core system role "${role.name}" cannot be deleted.`);
     }
 
     const assignedUsersCount = await RoleRepository.countAssignedUsers(id);

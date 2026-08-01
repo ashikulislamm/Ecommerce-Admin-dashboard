@@ -78,7 +78,7 @@ export default function LoginPage() {
             </div>
             <div>
               <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">
-                Apex Enterprise ERP
+                Ecommerce Admin Dashboard
               </h1>
               <p className="text-xs font-medium text-slate-500 mt-1">
                 Sign in to your enterprise management portal
@@ -102,7 +102,6 @@ export default function LoginPage() {
               onClick={fillDemoAdmin}
               className="w-full py-2 px-3 rounded-xl bg-white hover:bg-emerald-100/60 border border-emerald-200 text-emerald-900 text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5"
             >
-              <Sparkles className="w-3.5 h-3.5 text-emerald-700" />
               Fill Super Admin Credentials
             </button>
           </div>
@@ -171,17 +170,12 @@ export default function LoginPage() {
                   </>
                 ) : (
                   <>
-                    <ShieldCheck className="w-4 h-4" /> Sign In to ERP System
+                    <ShieldCheck className="w-4 h-4" /> Sign In
                   </>
                 )}
               </button>
             </div>
           </form>
-
-          {/* Footer Note */}
-          <div className="pt-3 border-t border-slate-100 text-center text-[11px] text-slate-400 font-medium">
-            Apex Enterprise Admin ERP System • SOC2 Compliant
-          </div>
         </div>
       </div>
     </div>

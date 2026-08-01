@@ -269,6 +269,6 @@ export class ProductService {
       err.statusCode = 404;
       throw err;
     }
-    return ProductRepository.softDelete(id);
+    return ProductRepository.deleteProduct(id);
   }
 }

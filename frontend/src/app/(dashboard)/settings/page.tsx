@@ -22,7 +22,9 @@ import {
   Eye,
   EyeOff,
   Loader2,
+  Settings,
 } from 'lucide-react';
+import { PageHeader } from '@/components/ui/PageHeader';
 
 interface GeneralSettings {
   storeName: string;
@@ -197,23 +199,13 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-2xl bg-white border border-slate-200/90 shadow-xs">
-        <div className="flex items-center gap-3.5">
-          <div className="p-3 rounded-xl bg-slate-100 text-slate-700 border border-slate-200">
-            <Sliders className="w-6 h-6" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">
-              System Settings & Configuration
-            </h1>
-            <p className="text-xs text-slate-500 mt-0.5 font-medium">
-              Manage global store defaults, security policies, catalog inventory rules, and webhooks
-            </p>
-          </div>
-        </div>
-      </div>
+    <div className="space-y-6">
+      {/* Unified Page Header */}
+      <PageHeader
+        title="System Settings & Configuration"
+        description="Manage global store defaults, security policies, catalog inventory rules, and webhooks."
+        icon={Settings}
+      />
 
       {/* Tabs Navigation */}
       <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-white border border-slate-200/90 shadow-xs overflow-x-auto text-xs font-bold">

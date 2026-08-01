@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import type { Role } from '../types/role.types';
 import type { PermissionGroup, Permission } from '@/features/permissions/types/permission.types';
-import { ShieldCheck, Save, Sparkles, CheckSquare, Square, RefreshCw } from 'lucide-react';
+import { ShieldCheck, Save, Sparkles, CheckSquare, Square, RefreshCw, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui';
 
 interface RolePermissionMatrixProps {
@@ -11,6 +11,7 @@ interface RolePermissionMatrixProps {
   groups: PermissionGroup[];
   onSavePermissions: (roleId: string, permissionIds: string[]) => Promise<void>;
   onGrantAllPermissions: (roleId: string) => Promise<void>;
+  onDeleteRole?: (role: Role) => void;
   isSubmitting: boolean;
 }
 
@@ -19,6 +20,7 @@ export function RolePermissionMatrix({
   groups,
   onSavePermissions,
   onGrantAllPermissions,
+  onDeleteRole,
   isSubmitting,
 }: RolePermissionMatrixProps) {
   const [selectedPermissionIds, setSelectedPermissionIds] = useState<string[]>([]);
@@ -91,9 +93,13 @@ export function RolePermissionMatrix({
         <div>
           <div className="flex items-center gap-2">
             <h3 className="text-lg font-extrabold text-slate-900">{selectedRole.name}</h3>
-            {selectedRole.isSystemRole && (
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-lime-100 text-lime-900 border border-lime-200">
-                System Role
+            {selectedRole.name === 'SUPER_ADMIN' ? (
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-900 border border-amber-200">
+                Core System Role (Protected)
+              </span>
+            ) : (
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-200">
+                Manageable Role
               </span>
             )}
           </div>
@@ -102,13 +108,24 @@ export function RolePermissionMatrix({
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2">
+          {selectedRole.name !== 'SUPER_ADMIN' && onDeleteRole && (
+            <Button
+              variant="destructiveGhost"
+              onClick={() => onDeleteRole(selectedRole)}
+              disabled={isSubmitting}
+              title={`Delete role ${selectedRole.name}`}
+            >
+              <Trash2 className="w-4 h-4" /> Delete Role
+            </Button>
+          )}
+
           <Button
             variant="lime"
             onClick={handleGrantAll}
             disabled={isSubmitting}
           >
-            <Sparkles className="w-4 h-4 text-lime-700" /> Grant All Permissions
+            <Sparkles className="w-4 h-4 text-lime-700" /> Grant All
           </Button>
 
           <Button

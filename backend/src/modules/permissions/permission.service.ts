@@ -8,7 +8,15 @@ export class PermissionService {
    * Create standard or custom permission
    */
   static async createPermission(input: CreatePermissionInput) {
-    const module = input.module.trim().toLowerCase();
+    let module = input.module.trim().toLowerCase();
+    if (module === 'product') module = 'products';
+    if (module === 'category') module = 'categories';
+    if (module === 'brand') module = 'brands';
+    if (module === 'attribute') module = 'attributes';
+    if (module === 'user') module = 'users';
+    if (module === 'role') module = 'roles';
+    if (module === 'permission') module = 'permissions';
+
     const action = input.action.trim().toLowerCase();
     const key = `${module}:${action}`;
 

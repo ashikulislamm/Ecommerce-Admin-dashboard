@@ -24,6 +24,28 @@ export const seedPermissionGroups = async (prisma: PrismaClient) => {
     groupMap.set(group.module, record.id);
   }
 
+  // Cleanup routine: remove any duplicate singular "product" group and permissions
+  const singularGroup = await prisma.permissionGroup.findUnique({
+    where: { module: 'product' },
+    include: { permissions: true },
+  });
+
+  if (singularGroup) {
+    const permIds = singularGroup.permissions.map((p) => p.id);
+    if (permIds.length > 0) {
+      await prisma.rolePermission.deleteMany({
+        where: { permissionId: { in: permIds } },
+      });
+      await prisma.permission.deleteMany({
+        where: { id: { in: permIds } },
+      });
+    }
+    await prisma.permissionGroup.delete({
+      where: { id: singularGroup.id },
+    });
+    console.log('  ✓ Cleaned up duplicate singular "product" permission group & permissions');
+  }
+
   console.log(`  ✓ Seeded ${groups.length} Permission Groups`);
   return groupMap;
 };

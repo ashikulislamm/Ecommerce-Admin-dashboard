@@ -11,6 +11,7 @@ import { PermissionTable } from '@/features/permissions/components/PermissionTab
 import { PermissionGroupMatrix } from '@/features/permissions/components/PermissionGroupMatrix';
 import { CreatePermissionModal } from '@/features/permissions/components/CreatePermissionModal';
 import { ConfirmDeleteModal } from '@/components/ui/ConfirmDeleteModal';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { PermissionGate, PermissionDeniedBanner } from '@/components/auth/PermissionGate';
 import { useAuth } from '@/components/providers/AuthProvider';
 import type { Permission } from '@/features/permissions/types/permission.types';
@@ -87,57 +88,24 @@ export default function PermissionsPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-2xl bg-white border border-slate-200/90 shadow-xs">
-        <div className="flex items-center gap-3.5">
-          <div className="p-3 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200">
-            <Shield className="w-6 h-6" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">
-              Permission Management
-            </h1>
-            <p className="text-xs text-slate-500 mt-0.5 font-medium">
-              Configure system action keys, module groupings, and custom permissions
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
-            <button
-              onClick={() => setViewMode('table')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
-                viewMode === 'table'
-                  ? 'bg-white text-slate-900 shadow-xs'
-                  : 'text-slate-500 hover:text-slate-900'
-              }`}
-            >
-              <TableIcon className="w-3.5 h-3.5" /> Table
-            </button>
-            <button
-              onClick={() => setViewMode('matrix')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
-                viewMode === 'matrix'
-                  ? 'bg-white text-slate-900 shadow-xs'
-                  : 'text-slate-500 hover:text-slate-900'
-              }`}
-            >
-              <Grid className="w-3.5 h-3.5" /> Matrix
-            </button>
-          </div>
-
+    <div className="space-y-6">
+      {/* Unified Page Header */}
+      <PageHeader
+        title="Permission Management"
+        description="Configure system action keys, module groupings, and custom permissions."
+        icon={Shield}
+        action={
           <PermissionGate permission="permissions:create">
             <button
               onClick={() => setIsCreateModalOpen(true)}
               className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs transition-all"
             >
-              <Plus className="w-4 h-4" /> Create Permission
+              <Plus className="w-4 h-4" />
+              Create Permission
             </button>
           </PermissionGate>
-        </div>
-      </div>
+        }
+      />
 
       {/* View Switch */}
       {viewMode === 'table' ? (

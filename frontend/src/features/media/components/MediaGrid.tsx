@@ -3,6 +3,7 @@
 import React from 'react';
 import type { MediaItem } from '../types/media.types';
 import { Image as ImageIcon, FileText, Video, Trash2, Edit2, ExternalLink, ArrowRightLeft } from 'lucide-react';
+import { getMediaUrl } from '@/lib/utils';
 
 interface MediaGridProps {
   mediaList: MediaItem[];
@@ -11,14 +12,6 @@ interface MediaGridProps {
   onDelete: (item: MediaItem) => void;
   onMove?: (item: MediaItem) => void;
 }
-
-const getApiBaseUrl = () => {
-  const envUrl = process.env.NEXT_PUBLIC_API_URL;
-  if (envUrl && !envUrl.includes('localhost:3000')) {
-    return envUrl.replace('/api/v1', '');
-  }
-  return 'http://localhost:8080';
-};
 
 export function MediaGrid({ mediaList, isLoading, onEdit, onDelete, onMove }: MediaGridProps) {
   if (isLoading) {
@@ -41,17 +34,11 @@ export function MediaGrid({ mediaList, isLoading, onEdit, onDelete, onMove }: Me
     );
   }
 
-  const backendHost = getApiBaseUrl();
-
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
       {mediaList.map((item) => {
-        const fullUrl = item.url?.startsWith('http') ? item.url : `${backendHost}${item.url}`;
-        const thumbUrl = item.thumbnailUrl
-          ? item.thumbnailUrl.startsWith('http')
-            ? item.thumbnailUrl
-            : `${backendHost}${item.thumbnailUrl}`
-          : fullUrl;
+        const fullUrl = getMediaUrl(item.url);
+        const thumbUrl = getMediaUrl(item.thumbnailUrl || item.url);
 
         return (
           <div

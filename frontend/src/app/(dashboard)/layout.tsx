@@ -90,7 +90,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div className="w-8 h-8 rounded-lg bg-emerald-700 text-white flex items-center justify-center font-bold text-sm shadow-sm">
             A
           </div>
-          <span className="font-extrabold text-slate-900 text-base">Apex ERP</span>
+          <span className="font-extrabold text-slate-900 text-base">Admin Panel</span>
         </div>
         <Button
           variant="ghost"
@@ -114,11 +114,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
           <div>
             <h1 className="font-extrabold text-slate-900 tracking-tight text-base leading-none">
-              Apex ERP
+              Admin Panel
             </h1>
-            <p className="text-[11px] text-emerald-700 font-semibold mt-1 uppercase tracking-wider">
-              Admin Portal
-            </p>
           </div>
         </div>
 
@@ -198,7 +195,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </header>
 
         {/* Page Content Viewport */}
-        <main className="flex-1 p-6 sm:p-8 overflow-y-auto">{children}</main>
+        <main className="flex-1 p-6 sm:p-8 overflow-y-auto max-w-8xl mx-auto w-full space-y-6">{children}</main>
       </div>
     </div>
   );

@@ -25,14 +25,14 @@ export const USER_SELECT_FIELDS = {
 export class UserRepository {
   static async findById(id: string) {
     return prisma.user.findFirst({
-      where: { id, deletedAt: null },
+      where: { id },
       select: USER_SELECT_FIELDS,
     });
   }
 
   static async findByEmail(email: string) {
     return prisma.user.findFirst({
-      where: { email: email.toLowerCase(), deletedAt: null },
+      where: { email: email.toLowerCase() },
       select: USER_SELECT_FIELDS,
     });
   }
@@ -80,15 +80,18 @@ export class UserRepository {
     });
   }
 
-  static async softDeleteUser(id: string) {
-    return prisma.user.update({
-      where: { id },
-      data: {
-        deletedAt: new Date(),
-        status: 'INACTIVE',
-      },
-      select: USER_SELECT_FIELDS,
+  static async deleteUser(id: string) {
+    return prisma.$transaction(async (tx) => {
+      await tx.refreshSession.deleteMany({ where: { userId: id } });
+      return tx.user.delete({
+        where: { id },
+        select: USER_SELECT_FIELDS,
+      });
     });
+  }
+
+  static async softDeleteUser(id: string) {
+    return this.deleteUser(id);
   }
 
   /**
@@ -111,9 +114,7 @@ export class UserRepository {
     const limit = params.limit ?? 20;
     const skip = (page - 1) * limit;
 
-    const where: any = {
-      deletedAt: null,
-    };
+    const where: any = {};
 
     if (params.search) {
       where.OR = [

@@ -8,6 +8,7 @@ import { ConfirmDeleteModal } from '@/components/ui/ConfirmDeleteModal';
 import { PermissionGate, PermissionDeniedBanner } from '@/components/auth/PermissionGate';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { toast } from '@/lib/toast';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { Plus, Search, Filter, RefreshCw, Sliders, Edit2, Trash2, Settings2 } from 'lucide-react';
 import type { AttributeItem, AttributeType } from '@/features/attributes/types/attribute.types';
 
@@ -60,23 +61,23 @@ export default function AttributesPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">Product Attributes</h1>
-          <p className="text-xs text-slate-500 mt-1">Configure variant options (Color, Size, Material) and custom display swatches.</p>
-        </div>
-
-        <PermissionGate permission="attributes:create">
-          <button
-            onClick={handleOpenCreate}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold shadow-xs transition-all"
-          >
-            <Plus className="w-4 h-4" />
-            Create Attribute
-          </button>
-        </PermissionGate>
-      </div>
+      {/* Unified Page Header */}
+      <PageHeader
+        title="Product Attributes & Values"
+        description="Configure variant options (Color, Size, Material) and custom display swatches."
+        icon={Sliders}
+        action={
+          <PermissionGate permission="attributes:create">
+            <button
+              onClick={handleOpenCreate}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold shadow-xs transition-all"
+            >
+              <Plus className="w-4 h-4" />
+              Create Attribute
+            </button>
+          </PermissionGate>
+        }
+      />
 
       {/* Toolbar */}
       <div className="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-xs flex flex-wrap items-center justify-between gap-3">

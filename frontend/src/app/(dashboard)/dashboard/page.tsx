@@ -55,23 +55,14 @@ export default function DashboardPage() {
     : user?.email || 'Administrator';
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto">
+    <div className="space-y-8">
       {/* ERP Welcome Header */}
       <Card className="p-6 sm:p-8 bg-gradient-to-br from-white via-slate-50/50 to-emerald-50/20 border-slate-200/90 shadow-xs relative overflow-hidden">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
           <div className="space-y-1.5">
-            <div className="flex items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-200/60 inline-flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" /> System Operational
-              </span>
-              <span className="text-xs font-semibold text-slate-400">| Apex ERP Enterprise Portal</span>
-            </div>
             <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
               Welcome back, {userName}
             </h1>
-            <p className="text-xs sm:text-sm text-slate-500 max-w-2xl font-medium leading-relaxed">
-              Real-time catalog analytics, operational governance, RBAC security matrix, and core system modules.
-            </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5 shrink-0">
